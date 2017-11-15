@@ -1,0 +1,21 @@
+{
+  "name": "proyecto209191",
+  "version": "1.0.0",
+  "description": "Proyecto final AP",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon inedx.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RazmaZOE/proyecto209191.git"
+  },
+  "author": "Ariel Lewkowicz",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "express": "^4.16.2",
+    "mongoose": "^4.13.2",
+    "nodemon": "^1.12.1"
+  }
+}
