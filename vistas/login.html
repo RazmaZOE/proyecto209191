@@ -1,0 +1,36 @@
+<!doctype html>
+
+<html  lang="es" ng-app="appLogin">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="./css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+        <script src="./js/angular.min.js" type="text/javascript"></script>
+        <script src="frontend.js" type="text/javascript"></script>
+        <title>Inicio de sesión</title>
+    </head>
+    <body ng-controller="controladorLogin">
+        <div class="container">
+            <div class="row justify-content-md-center">
+                <div class="col-md-6 col-lg-4 col-xl-4 text-center">
+                    <br>
+                    <br>
+                    <br>
+                    <h3>Inicie sesión en el Sistema:</h3>
+                    <br>
+                    <form name="formLogin">
+                        <div class="form-group">
+                            <input type="text" class="form-control input-lg text-center" placeholder="Nombre de Usuario" ng-model="loginUsuario.nombreUsuario" required>
+                            <br>
+                            <input type="password" class="form-control input-lg text-center" placeholder="Contraseña" ng-model="loginUsuario.password" required>
+                            <br>
+                        </div>
+                        <button type="submit" class="btn btn-primary" ng-click="login()" ng-disabled="formLogin.$invalid || selected">Iniciar Sesión</button>
+                    </form>
+                    <br>
+                    <label>{{ mensaje }}</label>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
