@@ -102,8 +102,8 @@ appEmpresa.controller("controladorEmpresaEmpleados", function($scope, $http){
     }
     else{
         $scope.empresa = localStorage.empresaSeleccionada;
-        console.log($scope.empresa);
-        $http.get("/empleados", $scope.empresa).then(respuestaOk, respuestaError);
+        //console.log($scope.empresa);
+        $http.get("/empleados/" + $scope.empresa).then(respuestaOk, respuestaError);
 
         function respuestaOk(respuesta){
             console.log(respuesta);

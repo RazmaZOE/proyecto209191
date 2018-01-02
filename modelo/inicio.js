@@ -13,7 +13,7 @@ module.exports = function(app) {
     app.post("/empresas/nueva", controladorEmpresa.registrarEmpresa);
     app.post("/empresas/liquidaciones", controladorEmpresa.liquidacionesEmpresa);
     
-    app.get("/empleados", controladorEmpleado.getEmpleados);
+    app.get("/empleados/:id", controladorEmpleado.getEmpleados);
     app.post("/empleados/nuevo", controladorEmpleado.nuevoEmpleado);
 
     app.get("/liquidaciones", controladorLiquidacion.getLiquidaciones);

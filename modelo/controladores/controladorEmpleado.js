@@ -1,8 +1,8 @@
 var Empleado = require("../clases/empleado");
 
 exports.getEmpleados = function(req, res){
-    console.log(req.body);
-    Empleado.find({empresa: "Prueba 001"},
+    console.log(req.params.id);
+    Empleado.find({empresa: req.params.id},
         function(err, empleados){
             if(err){
                 res.send(err);
