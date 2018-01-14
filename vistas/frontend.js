@@ -17,7 +17,7 @@ appLogin.controller("controladorLogin", function($scope, $http){
                 $scope.usuarioActivo = respuesta.data.usuario;
                 localStorage.setItem("usuario", respuesta.data.usuario.nombre);
                 localStorage.setItem("estaLogeado", true);
-                window.location.replace("empresas.html");
+                window.location.replace("spa.html");
             }
         }
         function respuestaError(respuesta){
@@ -26,9 +26,48 @@ appLogin.controller("controladorLogin", function($scope, $http){
     }
 });
 
-var appEmpresa = angular.module("appEmpresa", []);
+var appEmpresa = angular.module("appEmpresa", ["ngRoute"]);
 
-appEmpresa.controller("controladorEmpresas", function($scope, $http){
+appEmpresa.constant("baseUrl", "http://localhost:3000/");
+
+appEmpresa.config(function($routeProvider, $locationProvider){
+    $routeProvider
+    .when("/empresas", {
+        templateUrl : "empresas.html",
+        controller : "controladorEmpresas"
+    })
+    .when("/empresaNueva", {
+        templateUrl : "empresaNueva.html",
+        controller : "controladorEmpresaNueva"
+    })
+    .when("/liquidaciones", {
+        templateUrl : "liquidaciones.html",
+        controller : "controladorEmpresaLiquidaciones"
+    })
+    .when("/empleados", {
+        templateUrl : "empleados.html",
+        controller : "controladorEmpresaEmpleados"
+    })
+    .when("/empleadoNuevo", {
+        templateUrl : "empleadoNuevo.html",
+        controller : "controladorEmpleadoNuevo"
+    })
+    .when("/tipoAportacionNuevo", {
+        templateUrl : "tipoAportacionNuevo.html",
+        controller : "controladorEmpresas"
+    })
+    .when("/tipoContribuyenteNuevo/:ta", {
+        templateUrl : "tipoContribuyenteNuevo.html",
+        controller : "controladorEmpresas"
+    })
+    .otherwise({
+        templateUrl : "empresas.html",
+        controller : "controladorEmpresas"
+    });
+    $locationProvider.html5Mode(true);
+});
+
+appEmpresa.controller("controladorEmpresas", function($scope, $http, $location, $routeParams){
     if(!localStorage.estaLogeado){
         window.location.replace("login.html");
     }
@@ -50,28 +89,43 @@ appEmpresa.controller("controladorEmpresas", function($scope, $http){
 
             function respuestaOk(respuesta){
                 localStorage.setItem("empresaSeleccionada", empresa.nombre);
-                window.location.replace("liquidaciones.html");
+                //window.location.replace("liquidaciones.html");
+                $location.path("/liquidaciones");
             }
             function respuestaError(respuesta){
                 console.log("Error: " + respuesta.data);
             }
         }
-    }
-});
 
-appEmpresa.controller("controladorEmpresaNueva", function($scope, $http){
-    $scope.mensaje = "";
-    if(!localStorage.estaLogeado){
-        window.location.replace("login.html");
-    }
-    else{
-        $scope.crearEmpresa = function(){
-            $http.post("/empresas/nueva", $scope.empresaNueva).then(respuestaOk, respuestaError);
-            
+        $scope.crearTipoAportacion = function(){
+            $http.post("/empresas/tipoAportacion/nuevo", $scope.tipoAportacionNuevo).then(respuestaOk, respuestaError);
+
             function respuestaOk(respuesta){
                 $scope.mensaje = respuesta.data.mensaje;
                 if(respuesta.data.exito){
-                    window.location.replace("empresas.html");
+                    $location.path("empresaNueva");
+                }
+                else{
+                    $scope.mensaje = respuesta.data.mensaje;
+                }
+            }
+            function respuestaError(respuesta){
+                console.log("Error: " + respuesta.data);
+            }
+        }
+
+        $scope.crearTipoContribuyente = function(){
+            //Ver cómo pasar el tipo de aportación
+            var codTipoCont = $routeParams.ta;
+            console.log(codTipoCont);
+            console.log($scope.tipoContribuyenteNuevo);
+            $http.post("/empresas/tipoAportacion/tipoContribuyente/" + codTipoCont, $scope.tipoContribuyenteNuevo).then(respuestaOk, respuestaError);
+
+            function respuestaOk(respuesta){
+                $scope.mensaje = respuesta.data.mensaje;
+                if(respuesta.data.exito){
+                    // Tengo que dar el alta del tipo de contribuyente
+                    $location.path("empresaNueva");
                 }
                 else{
                     $scope.mensaje = respuesta.data.mensaje;
@@ -84,7 +138,60 @@ appEmpresa.controller("controladorEmpresaNueva", function($scope, $http){
     }
 });
 
-appEmpresa.controller("controladorEmpresaLiquidaciones", function($scope, $http){
+appEmpresa.controller("controladorEmpresaNueva", function($scope, $http, $location, $route){
+    $scope.mensaje = "";
+    $scope.tApors = {};
+    $scope.tConts = {};
+    if(!localStorage.estaLogeado){
+        window.location.replace("login.html");
+    }
+    else{
+        $scope.crearEmpresa = function(){
+            $http.post("/empresas/nueva", $scope.empresaNueva).then(respuestaOk, respuestaError);
+            
+            function respuestaOk(respuesta){
+                $scope.mensaje = respuesta.data.mensaje;
+                if(respuesta.data.exito){
+                    //window.location.replace("empresas.html");
+                    $location.path("/empresas");
+                }
+                else{
+                    $scope.mensaje = respuesta.data.mensaje;
+                }
+            }
+            function respuestaError(respuesta){
+                console.log("Error: " + respuesta.data);
+            }
+        }
+
+        $http.get("/empresas/tipoAportacion").then(respuestaOk, respuestaError);
+
+        function respuestaOk(respuesta){
+            $scope.tApors = respuesta.data;
+            console.log($scope.tApors);
+            console.log("Largo: " +  Object.keys($scope.tApors).length);
+        }
+        function respuestaError(respuesta){
+            console.log("Error: " + respuesta.data);
+        }
+
+        $scope.cargarTiposContribuyentes = function(){
+            console.log($scope.empresaNueva.tipoAportacion);
+            $http.get("/empresas/tipoAportacion/tipoContribuyente/" + $scope.empresaNueva.tipoAportacion).then(respuestaOk, respuestaError);
+            console.log("ENTRÓ")
+
+            function respuestaOk(respuesta){
+                $scope.tConts = respuesta.data;
+                console.log($scope.tConts);
+            }
+            function respuestaError(respuesta){
+                console.log("Error: " + respuesta.data);
+            }
+        }
+    }
+});
+
+appEmpresa.controller("controladorEmpresaLiquidaciones", function($scope, $http, $location){
     $scope.empresa = "";
     if(!localStorage.estaLogeado){
         window.location.replace("login.html");
@@ -94,7 +201,7 @@ appEmpresa.controller("controladorEmpresaLiquidaciones", function($scope, $http)
     }
 });
 
-appEmpresa.controller("controladorEmpresaEmpleados", function($scope, $http){
+appEmpresa.controller("controladorEmpresaEmpleados", function($scope, $http, $location){
     $scope.empresa = "";
     $scope.empleados = {};
     if(!localStorage.estaLogeado){
@@ -116,7 +223,7 @@ appEmpresa.controller("controladorEmpresaEmpleados", function($scope, $http){
     }
 });
 
-appEmpresa.controller("controladorEmpleadoNuevo", function($scope, $http){
+appEmpresa.controller("controladorEmpleadoNuevo", function($scope, $http, $location){
     //$scope.empresa = {};
     if(!localStorage.estaLogeado){
         window.location.replace("login.html");
@@ -129,7 +236,8 @@ appEmpresa.controller("controladorEmpleadoNuevo", function($scope, $http){
             function respuestaOk(respuesta){
                 $scope.mensaje = respuesta.data.mensaje;
                 if(respuesta.data.exito){
-                    window.location.replace("liquidaciones.html");
+                    //window.location.replace("liquidaciones.html");
+                    $location.path("/liquidaciones");
                 }
                 else{
                     $scope.mensaje = respuesta.data.mensaje;

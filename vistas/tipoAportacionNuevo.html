@@ -1,0 +1,32 @@
+<div class="container">
+    <nav class="navbar navbar-expand-sm bg-primary navbar-dark">
+        <ul class="navbar-nav">
+            <li class="nav-item"><a class="nav-link" href='empresas'>Empresas</a></li>  
+            <li class="nav-item"><a class="nav-link" href='login.html'>Cerrar Sesión</a></li>           
+        </ul>
+    </nav>
+</div>
+<div class="container">
+    <div class="row justify-content-md-center">
+        <div class="col-md-6 col-lg-4 col-xl-4 text-center">
+            <br>
+            <br>
+            <br>
+            <h3>Añadir Tipo de Aportación Nuevo</h3>
+            <br>
+            <form name="formTipoAportacionNuevo">
+                <div class="form-group">
+                    <label>Código (número de dos cifras): </label>
+                    <input type="text" class="form-control input-lg text-center" placeholder="Ej: 01" ng-model="tipoAportacionNuevo.codigo" required>
+                    <br>
+                    <label>Título: </label>
+                    <input type="text" class="form-control input-lg text-center" placeholder="Ej: Industria y Comercio" ng-model="tipoAportacionNuevo.titulo">
+                    <br>
+                </div>
+                <button type="submit" class="btn btn-primary" ng-click="crearTipoAportacion()" ng-disabled="formTipoAportacionNuevo.$invalid">Crear Tipo de Aportación</button>
+            </form>
+            <br>
+            <label>{{ mensaje }}</label>
+        </div>
+    </div>
+</div>

@@ -14,7 +14,7 @@ var empresaSchema = new Schema({
     direccion: { type: String },
     telefono: { type: String },
     tipoContribuyente: { type: Number },
-    tipoAportacion: { type: Number },
+    tipoAportacion: { type: String },
 });
 
 module.exports = mongoose.model("Empresa", empresaSchema);
