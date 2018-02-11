@@ -8,4 +8,3 @@ var tipoAportacionEmpresaSchema = new Schema({
 });
 
 module.exports = mongoose.model("TipoAportacionEmpresa", tipoAportacionEmpresaSchema);
-//asdasd

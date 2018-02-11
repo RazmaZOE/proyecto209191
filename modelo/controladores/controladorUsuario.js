@@ -1,25 +1,69 @@
 var Usuario = require("../clases/usuario");
 
 exports.registrarUsuario = function (req, res){
-    var user = new Usuario({
-        nombre: req.body.nombreUsuario.toLowerCase(),
-        password: req.body.password,
-        rol: "admin" 
-    });
-    user.save(function(err){
-        if(err){
+    if(!req.body.nombreUsuario){
+        res.json({
+            exito: false,
+            mensaje: "No se introdujo el nombre de usuario"
+        });
+    }
+    else{
+        if(!req.body.password || !req.body.verificarPassword){
             res.json({
                 exito: false,
-                mensaje: err
+                mensaje: "No se introdujo la contraseña en ambos campos"
             });
         }
         else{
-            res.json({
-                exito: true,
-                mensaje: "Usuario registrado"
-            });
+            if(req.body.password != req.body.verificarPassword){
+                res.json({
+                    exito: false,
+                    mensaje: "Las contraseñas no coinciden"
+                });
+            }
+            else{
+                Usuario.findOne({
+                    nombre: req.body.nombreUsuario.toLowerCase()
+                }, function(err, user){
+                    if(err){
+                        res.json({
+                            exito: false,
+                            mensaje: err
+                        });
+                    }
+                    else{
+                        if(user){
+                            res.json({
+                                exito: false,
+                                mensaje: "Ya existe un usuario con ese nombre"
+                            });
+                        }
+                        else{
+                            var nuevoUsuario = new Usuario({
+                                nombre: req.body.nombreUsuario.toLowerCase(),
+                                password: req.body.password,
+                                rol: "admin" 
+                            });
+                            nuevoUsuario.save(function(err){
+                                if(err){
+                                    res.json({
+                                        exito: false,
+                                        mensaje: err
+                                    });
+                                }
+                                else{
+                                    res.json({
+                                        exito: true,
+                                        mensaje: "Usuario registrado"
+                                    });
+                                }
+                            });
+                        }
+                    }
+                });
+            }
         }
-    });
+    }
 };
 
 exports.login = function(req, res){

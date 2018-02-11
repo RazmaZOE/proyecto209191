@@ -1,7 +1,7 @@
 <div class="container">
     <nav class="navbar navbar-expand-sm bg-primary navbar-dark">
         <ul class="navbar-nav">
-            <li class="nav-item"><a class="nav-link" href='login.html'>Cerrar Sesión</a></li>           
+            <li class="nav-item"><a class="nav-link" href='cerrarSesion'>Cerrar Sesión</a></li>           
         </ul>
     </nav>
 </div>
@@ -15,16 +15,18 @@
             <br>
             <table class="table table-striped">
                 <tr class="info">
-                    <td>Nombre</td>
-                    <td>Número de RUT</td>
-                    <td>Número de BPS</td>
-                    <td>Liquidaciones</td>
+                    <th>Nombre</td>
+                    <th>Número de RUT</th>
+                    <th>Número de BPS</th>
+                    <th>Liquidaciones</th>
+                    <th>Editar</th>
                 </tr>
                 <tr ng-repeat="empresa in empresas">
                     <td>{{ empresa.nombre }}</td>
                     <td>{{ empresa.numRut }}</td>
                     <td>{{ empresa.numBps }}</td>
                     <td><a class="btn btn-outline-primary" ng-click="liquidacionesEmpresa(empresa)">Ver</a></td>
+                    <td><a class="btn btn-outline-primary" ng-click="empresaEditar(empresa)">Editar</a></td>
                 </tr>
             </table>
             <br>

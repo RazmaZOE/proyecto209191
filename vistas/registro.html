@@ -16,24 +16,26 @@
                     <br>
                     <br>
                     <br>
-                    <h3>Inicie sesión en el Sistema:</h3>
+                    <h3>Registrarse en el Sistema:</h3>
                     <br>
                     <form name="formLogin">
                         <div class="form-group">
-                            <input type="text" class="form-control input-lg text-center" placeholder="Nombre de Usuario" ng-model="loginUsuario.nombreUsuario" required>
+                            <input type="text" class="form-control input-lg text-center" placeholder="Nombre de Usuario" ng-model="registroUsuario.nombreUsuario" required>
                             <br>
-                            <input type="password" class="form-control input-lg text-center" placeholder="Contraseña" ng-model="loginUsuario.password" required>
+                            <input type="password" class="form-control input-lg text-center" placeholder="Contraseña" ng-model="registroUsuario.password" required>
+                            <br>
+                            <input type="password" class="form-control input-lg text-center" placeholder="Verificar contraseña" ng-model="registroUsuario.verificarPassword" required>
                             <br>
                         </div>
-                        <button type="submit" class="btn btn-primary" ng-click="login()" ng-disabled="formLogin.$invalid || selected">Iniciar Sesión</button>
+                        <button type="submit" class="btn btn-primary" ng-click="registro()" ng-disabled="formLogin.$invalid || selected">Registarse</button>
                     </form>
                     <br>
                     <br>
                     <label>{{ mensaje }}</label>
                     <br>
                     <br>
-                    <p>¿No tiene usuario?</p>
-                    <a href="registro.html" role="button">Registrarse</a>
+                    <p>¿Ya tiene usuario?</p>
+                    <a href="login.html" role="button">Iniciar Sesión</a>
                 </div>
             </div>
         </div>

@@ -1,0 +1,111 @@
+<div class="container">
+        <nav class="navbar navbar-expand-sm bg-primary navbar-dark">
+            <ul class="navbar-nav">
+                <li class="nav-item"><a class="nav-link" href='liquidaciones'>Liquidaciones</a></li>
+                <li class="nav-item"><a class="nav-link" href='empresas'>Empresas</a></li>  
+                <li class="nav-item"><a class="nav-link" href='cerrarSesion'>Cerrar Sesión</a></li>           
+            </ul>
+        </nav>
+    </div>
+    <div class="container">
+        <div class="row justify-content-md-center">
+            <div class="col-10">
+                <br>
+                <br>
+                <br>
+                <h3>Editar empleado:</h3>
+                <br>
+                <form name="formEmpleadoEditar">
+                    <div class="form-group">
+                        <div class="form-group row">
+                            <label class="col-6 col-form-label">Nombres*</label>
+                            <div class="col-6">
+                                <input type="text" class="form-control" placeholder="Ej: Juan José" ng-model="empleadoEditar.nombres" required>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-6 col-form-label">Apellidos*</label>
+                            <div class="col-6">
+                                <input type="text" class="form-control" placeholder="Ej: Pérez Gonzalez" ng-model="empleadoEditar.apellidos" required>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-6 col-form-label">Cédula de identidad*</label>
+                            <div class="col-6">
+                                <input type="number" class="form-control" placeholder="Ej: 12345678 (sin puntos ni guión)" ng-model="empleadoEditar.ci" required>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-6 col-form-label">Fecha de Nacimiento</label>
+                            <div class="col-6">
+                                <input type="date" class="form-control" placeholder="Fecha de Nacimiento" ng-model="empleadoEditar.fechaNacimiento" required>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-6 col-form-label">Fecha de ingreso*</label>
+                            <div class="col-6">
+                                <input type="date" class="form-control" placeholder="Fecha de ingreso" ng-model="empleadoEditar.fechaIngreso" required>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-6 col-form-label">Código Seguro de Salud</label>
+                            <div class="col-6">
+                                    <input type="number" class="form-control" placeholder="Ej: 15" ng-model="empleadoEditar.seguroSalud" required>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-6 col-form-label">Horario</label>
+                            <div class="col-6">
+                                <input type="text" class="form-control" placeholder="Ej: L a V de 09:00 a 17:00" ng-model="empleadoEditar.horario">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-6 col-form-label">Horas por día*</label>
+                            <div class="col-6">
+                                    <input type="number" class="form-control" placeholder="Ej: 8" ng-model="empleadoEditar.horasPorDia" required>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-6 col-form-label">Banco</label>
+                            <div class="col-6">
+                                <input type="text" class="form-control" placeholder="Ej: BROU" ng-model="empleadoEditar.banco">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-6 col-form-label">Número de Sucursal del banco</label>
+                            <div class="col-6">
+                                <input type="text" class="form-control" placeholder="Ej: 194" ng-model="empleadoEditar.numSucursalBanco">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-6 col-form-label">Número de cuenta del banco</label>
+                            <div class="col-6">
+                                <input type="text" class="form-control" placeholder="Ej: 123456" ng-model="empleadoEditar.numCuentaBanco">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-6 col-form-label">Sueldo*</label>
+                            <div class="col-6">
+                                <input type="number" class="form-control" placeholder="Ej: 20000" ng-model="empleadoEditar.sueldo" required>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-6 col-form-label form-check-label">¿Es jornalero?</label>
+                            <div class="col-6">
+                                <input type="checkbox" class="form-check-input" ng-model="empleadoEditar.esJornalero">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-6 col-form-label">Cantidad de hijos menores de 18 años</label>
+                            <div class="col-6">
+                                <input type="number" class="form-control" placeholder="Ej: 2" ng-model="empleadoEditar.hijosMenores">
+                            </div>
+                        </div> 
+                    </div>
+                    <button type="submit" class="btn btn-primary" ng-click="editarEmpleado()" ng-disabled="formEmpleadoEditar.$invalid">Editar empleado</button>
+                </form>
+                <br>
+                <label>{{ mensaje }}</label>
+            </div>
+        </div>
+    </div>

@@ -2,13 +2,13 @@
     <nav class="navbar navbar-expand-sm bg-primary navbar-dark">
         <ul class="navbar-nav">
             <li class="nav-item"><a class="nav-link" href='empresas'>Empresas</a></li>  
-            <li class="nav-item"><a class="nav-link" href='login.html'>Cerrar Sesión</a></li>           
+            <li class="nav-item"><a class="nav-link" href='cerrarSesion'>Cerrar Sesión</a></li>           
         </ul>
     </nav>
 </div>
 <div class="container">
     <div class="row justify-content-md-center">
-        <div class="col-md-6 col-lg-4 col-xl-4 text-center">
+        <div >
             <br>
             <br>
             <br>
@@ -16,36 +16,82 @@
             <br>
             <form name="formEmpresaNueva">
                 <div class="form-group">
-                    <label>Nombre de la empresa: </label>
-                    <input type="text" class="form-control input-lg text-center" placeholder="Nombre de la empresa en el sistema" ng-model="empresaNueva.nombre" required>
-                    <br>
-                    <label>Razón Social: </label>
-                    <input type="text" class="form-control input-lg text-center" placeholder="Ej: Empresa SA" ng-model="empresaNueva.razonSocial">
-                    <br>
-                    <label>Número de RUT: </label>
-                    <input type="number" class="form-control input-lg text-center" placeholder="Ej: 210123450018" ng-model="empresaNueva.numRut">
-                    <br>
-                    <label>Número de BPS: </label>
-                    <input type="number" class="form-control input-lg text-center" placeholder="Ej: 123456" ng-model="empresaNueva.numBps">
-                    <br>
-                    <label>Dirección: </label>
-                    <input type="text" class="form-control input-lg text-center" placeholder="Ej: 18 de Julio 1234 apto. 101" ng-model="empresaNueva.direccion">
-                    <br>
-                    <label>Número de Teléfono: </label>
-                    <input type="number" class="form-control input-lg text-center" placeholder="Ej: 24001234" ng-model="empresaNueva.telefono">
-                    <br>
-                    <label>Tipo de Aportación: <a class="btn btn-secondary btn-sm" role="button" href="tipoAportacionNuevo">Crear Nuevo</a></label>
-                    <!-- <select class="form-control input-lg text-center" ng-model="empresaNueva.tipoAportacion" ng-options"t.titulo for t in tApors"></select> -->
-                    <select class="form-control input-lg text-center" ng-model="empresaNueva.tipoAportacion" ng-change="cargarTiposContribuyentes()">
-                        <option ng-repeat="t in tApors" value="{{t.codigo}}">{{t.codigo}} - {{t.titulo}}</option>
-                    </select>
-                    <br>
-                    <label>Tipo de Contribuyente: <a class="btn btn-secondary btn-sm" role="button" href="tipoContribuyenteNuevo/:{{empresaNueva.tipoAportacion}}">Crear Nuevo</a></label>
-                    <!-- <input type="number" class="form-control input-lg text-center" placeholder="Tipo de Contribuyente" ng-model="empresaNueva.tipoContribuyente"> -->
-                    <select class="form-control input-lg text-center" ng-model="empresaNueva.tipoContribuyente">
-                        <option ng-repeat="tc in tConts" value="{{tc.codigoTC}}">{{tc.codigoTC}} - {{tc.tituloTC}}</option>
-                    </select>
-                    <br>
+                    <div class="form-group row">
+                        <label class="col-4 col-form-label">Nombre de la empresa: </label>
+                        <div class="col-8">
+                            <input type="text" class="form-control input-lg" placeholder="Nombre de la empresa en el sistema" ng-model="empresaNueva.nombre" required>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-4 col-form-label">Razón Social: </label>
+                        <div class="col-8">
+                            <input type="text" class="form-control input-lg" placeholder="Ej: Empresa SA" ng-model="empresaNueva.razonSocial" required>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-4 col-form-label">Número de RUT: </label>
+                        <div class="col-8">
+                            <input type="number" class="form-control input-lg" placeholder="Ej: 210123450018" ng-model="empresaNueva.numRut" required>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-4 col-form-label">Número de BPS: </label>
+                        <div class="col-8">
+                            <input type="number" class="form-control input-lg" placeholder="Ej: 123456" ng-model="empresaNueva.numBps" required>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-4 col-form-label">Número de BSE: </label>
+                        <div class="col-8">
+                            <input type="number" class="form-control input-lg" placeholder="Ej: 123456" ng-model="empresaNueva.numBSE">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-4 col-form-label">Número de MTSS: </label>
+                        <div class="col-8">
+                            <input type="number" class="form-control input-lg" placeholder="Ej: 123456" ng-model="empresaNueva.numMtss">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-4 col-form-label">Grupo Consejo de Salarios: </label>
+                        <div class="col-8">
+                            <input type="number" class="form-control input-lg" placeholder="Ej: 10" ng-model="empresaNueva.grupo">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-4 col-form-label">Subgrupo Consejo de Salarios: </label>
+                        <div class="col-8">
+                            <input type="number" class="form-control input-lg" placeholder="Ej: 4" ng-model="empresaNueva.subgrupo">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-4 col-form-label">Dirección: </label>
+                        <div class="col-8">
+                            <input type="text" class="form-control input-lg" placeholder="Ej: 18 de Julio 1234 apto. 101" ng-model="empresaNueva.direccion">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-4 col-form-label">Número de Teléfono: </label>
+                        <div class="col-8">
+                            <input type="text" class="form-control input-lg" placeholder="Ej: 24001234" ng-model="empresaNueva.telefono">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-4 col-form-label">Tipo de Aportación:</label>
+                        <div class="col-8">
+                            <select class="form-control input-lg" ng-model="empresaNueva.tipoAportacion" ng-change="cargarTiposContribuyentes()">
+                            <option ng-repeat="t in tApors" value="{{t.codigo}}">{{t.codigo}} - {{t.titulo}}</option>
+                        </select>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-4 col-form-label">Tipo de Contribuyente:</label>
+                        <div class="col-8">
+                            <select class="form-control input-lg" ng-model="empresaNueva.tipoContribuyente">
+                            <option ng-repeat="tc in tConts" value="{{tc.codigoTC}}">{{tc.codigoTC}} - {{tc.tituloTC}}</option>
+                        </select>
+                        </div>
+                    </div>
                 </div>
                 <button type="submit" class="btn btn-primary" ng-click="crearEmpresa()" ng-disabled="formEmpresaNueva.$invalid">Crear nueva empresa</button>
             </form>

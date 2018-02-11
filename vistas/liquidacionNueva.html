@@ -1,0 +1,347 @@
+<div class="container">
+    <div class="container">
+        <nav class="navbar navbar-expand-sm bg-primary navbar-dark">
+            <ul class="navbar-nav">
+                <li class="nav-item"><a class="nav-link" href='empresas'>Empresas</a></li>  
+                <li class="nav-item"><a class="nav-link" href='cerrarSesion'>Cerrar Sesión</a></li>           
+            </ul>
+        </nav>
+    </div>
+    <div class="container">
+        <nav class="navbar bg-primary navbar-dark">
+            <ul class="navbar-nav">
+                <li class="nav-item active"><a class="nav-link" href='liquidaciones' ng-click="liquidacionesEmpresa()">Liquidaciones</a></li>  
+                <li class="nav-item active"><a class="nav-link" href='empleados' ng-click="empleadosEmpresa()">Empleados</a></li>           
+            </ul>
+        </nav>
+        <form name="formLiquidacionNueva">
+            <div class="col-lg-10 col-xl-10 text-center">
+                <br>
+                <br>
+                <br>
+                <div class="form-group row text-center">
+                    <label class=" col-sm-2 "><h3>Fecha: </h3></label>
+                    <div class="col-sm-2">
+                        <input type="number" min="1" max="12" class="form-control" ng-model="mes" ng-change="haySelected()" placeholder="Ej: 6" required>
+                    </div>
+                    <div class="col-sm-3">
+                        <input type="number" min="1900" class="form-control" ng-model="anio" ng-change="haySelected()" placeholder="Ej: 2018" required>
+                    </div>
+                </div>
+                <div class="btn-group" data-toggle="buttons">
+                    <label class="btn btn-primary">
+                        <input type="radio" class="form-control form-control-sm" ng-model="nombre" value="Sueldo" ng-click="setNombre()" checked> Sueldo
+                    </label>
+                    <label class="btn btn-primary">
+                        <input type="radio" class="form-control form-control-sm" ng-model="nombre" value="Aguinaldo" ng-click="setNombre()"> Aguinaldo
+                    </label>
+                    <label class="btn btn-primary">
+                        <input type="radio" class="form-control form-control-sm" ng-model="nombre" value="Salario Vacacional" ng-click="setNombre()"> Salario Vacacional
+                    </label>
+                    <label class="btn btn-primary">
+                        <input type="radio" class="form-control form-control-sm" ng-model="nombre" value="Egreso" ng-click="setNombre()"> Egreso
+                    </label>
+                </div>
+                <h3 ng-model="empresa">Empleados de {{ empresa }}:</h3>
+                <br>
+                <table class="table table-hover table-sm">
+                    <thead>
+                        <tr class="info">
+                            <th>Nombres</th>
+                            <th>Apellidos</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="empleado in empleados" ng-click="selectEmpleado(empleado)">
+                            <td>{{ empleado.nombres }}</td>
+                            <td>{{ empleado.apellidos }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <br>
+            </div>
+            <div class="container">
+                <div class="col-lg-10 col-xl-10">
+                    <div class="card col-lg-10 col-xl-10">
+                        <h6 class="card-header bg-info text-white">DATOS DE LA LIQUIDACIÓN</h6>
+                        <div class="form-group row">
+                            <label class="card-text col-for-label">Nombre: {{ nombre }}</label>
+                        </div>
+                        <div class="form-group row">
+                            <label class="card-text col-for-label">{{ fechaLiquidacion | date: "'Liquidada el ' dd/MM/y 'a las ' H:mm" }}</label>
+                        </div>
+                        <div ng-show="esSalarioVacacional">
+                            <p>Días de licencia generados en {{ anio - 1 }}: {{ sv.diasLicencia }}</p>
+                            <p>Días de licencia gozados en {{ anio }}: {{ sv.diasGozados }}</p>
+                        </div>
+                    </div>
+                    <div class="card col-lg-10 col-xl-10" ng-show="selected">
+                        <h6 class="card-header bg-info text-white">DATOS DEL EMPLEADO</h6>
+                        <p class="card-text">Nombre: {{ empleadoSeleccionado.apellidos }}, {{ empleadoSeleccionado.nombres }}</p>
+                        <p class="card-text">Cédula de Identidad: {{ empleadoSeleccionado.ci }}</p>
+                        <p class="card-text">Fecha de nacimiento: {{ empleadoSeleccionado.fechaNacimiento | date: "dd/MM/y" }}</p>
+                        <p class="card-text">Fecha de Ingreso: {{ empleadoSeleccionado.fechaIngreso | date: "dd/MM/y" }}</p>
+                        <p class="card-text">Código Seguro de Salud: {{ empleadoSeleccionado.seguroSalud }}</p>
+                    </div>
+                </div>
+                <div ng-show="errorLiquidacion">
+                    <p>{{  mensajeErrorLiquidaciones }}</p>
+                </div>
+                <div class="col-lg-10 col-xl-10">
+                    <div class="card col-lg-10 col-xl-10" ng-show="selected && !errorLiquidacion">
+                        <h6 class="card-header bg-success text-white">HABERES</h6>
+                        <div ng-show="esSueldo">
+                            <div class="card-block"> 
+                                <label class="form-check-label">
+                                    <input type="checkbox" class="form-check-input" ng-model="liquidacion.tieneFaltas" ng-change="updateFaltas()">
+                                    Faltas
+                                </label>
+                                <label class="form-check-label">
+                                    <input type="checkbox" class="form-check-input" ng-model="liquidacion.tieneHorasExtra" ng-change="updateHorasExtra()">
+                                    Horas Extra
+                                </label>
+                                <label class="form-check-label">
+                                    <input type="checkbox" class="form-check-input" ng-model="liquidacion.tieneFictoPropina" ng-change="updateFictoPropina()">
+                                    Ficto Propina
+                                </label>
+                                <label class="form-check-label">
+                                    <input type="checkbox" class="form-check-input" ng-model="liquidacion.tieneDescansoTrabajado" ng-change="updateDescansoTrabajado()">
+                                    Descanso Trabajado
+                                </label>
+                                <label class="form-check-label">
+                                    <input type="checkbox" class="form-check-input" ng-model="liquidacion.tieneFeriadoPago" ng-change="updateFeriadoPago()">
+                                    Feriado Pago
+                                </label>
+                                <label class="form-check-label">
+                                    <input type="checkbox" class="form-check-input" ng-model="liquidacion.tienePrimaPorAntiguedad" ng-change="updatePrimaPorAntiguedad()">
+                                    Prima por Antigüedad
+                                </label>
+                                <label class="form-check-label">
+                                    <input type="checkbox" class="form-check-input" ng-model="liquidacion.tienePrimaPorProductividad" ng-change="updatePrimaPorProductividad()">
+                                    Prima por Productividad
+                                </label>
+                                <div class="form-group row">
+                                    <label class="card-text col-sm-4 col-for-label">Sueldo: </label>
+                                    <div class="col-sm-8">
+                                        <input type="number" step=".01" class="form-control form-control-sm" ng-model="liquidacion.sueldo" readonly>
+                                    </div>
+                                </div>
+                                <div class="form-group row" ng-show="liquidacion.esJornalero">
+                                    <label class="card-text col-sm-4 col-for-label">Jornales: </label>
+                                    <div class="col-sm-8">
+                                        <input type="number" class="form-control form-control-sm" ng-model="liquidacion.jornales" placeholder="Cantidad de jornales" ng-change="calcularMontoJornales()">
+                                    </div>
+                                </div>
+                                <div class="form-group row" ng-show="liquidacion.tieneFaltas">
+                                    <label class="card-text col-sm-4 col-for-label">Faltas: </label>
+                                    <div class="col-sm-8">
+                                        <input type="number" min="0" max="30" class="form-control form-control-sm" ng-model="liquidacion.faltas" placeholder="Cantidad de faltas" ng-change="calcularFaltas()">
+                                    </div>
+                                </div>
+                                <div class="form-group row" ng-show="liquidacion.tieneHorasExtra">
+                                    <label class="card-text col-sm-4 col-for-label">Horas Extras: </label>
+                                    <div class="col-sm-8">
+                                        <input type="number" class="form-control form-control-sm" ng-model="liquidacion.horasExtra" placeholder="Cantidad de horas extras" ng-change="calcularHorasExtra()">
+                                    </div>
+                                </div>
+                                <div class="form-group row" ng-show="liquidacion.tieneFictoPropina">
+                                    <label class="card-text col-sm-4 col-for-label">Ficto Propina: </label>
+                                    <div class="col-sm-8">
+                                        <input type="number" class="form-control form-control-sm" ng-model="liquidacion.fictoPropina" placeholder="Monto ficto propina" ng-change="actualizarDatos()">
+                                    </div>
+                                </div>
+                                <div class="form-group row" ng-show="liquidacion.tieneDescansoTrabajado">
+                                    <label class="card-text col-sm-4 col-for-label">Descansos Trabajados: </label>
+                                    <div class="col-sm-8">
+                                        <input type="number" class="form-control form-control-sm" ng-model="liquidacion.descansoTrabajado" placeholder="Cantidad de horas de descansos trabajados" ng-change="calcularDescansoTrabajado()">
+                                    </div>
+                                </div>
+                                <div class="form-group row" ng-show="liquidacion.tieneFeriadoPago">
+                                    <label class="card-text col-sm-4 col-for-label">Feriados Trabajados: </label>
+                                    <div class="col-sm-8">
+                                        <input type="number" class="form-control form-control-sm" ng-model="liquidacion.feriadoPago" placeholder="Cantidad de feriados trabajados" ng-change="calcularFeriadoTrabajado()">
+                                    </div>
+                                </div>
+                                <div class="form-group row" ng-show="liquidacion.tienePrimaPorAntiguedad">
+                                    <label class="card-text col-sm-4 col-for-label">Prima por Antigüedad: </label>
+                                    <div class="col-sm-8">
+                                        <input type="number" class="form-control form-control-sm" ng-model="liquidacion.primaPorAntiguedad" placeholder="Monto prima por antigüedad" ng-change="actualizarDatos()">
+                                    </div>
+                                </div>
+                                <div class="form-group row" ng-show="liquidacion.tienePrimaPorProductividad">
+                                    <label class="card-text col-sm-4 col-for-label">Prima por Productividad: </label>
+                                    <div class="col-sm-8">
+                                        <input type="number" class="form-control form-control-sm" ng-model="liquidacion.primaPorProductividad" placeholder="Monto prima por productividad" ng-change="actualizarDatos()">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="card-text col-sm-4 col-for-label text-success">Total Haberes Gravados: </label>
+                                    <div class="col-sm-8">
+                                        <input type="number" step=".01" class="form-control form-control-sm" ng-model="haberesGravados" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div ng-show="esAguinaldo">
+                            <label>{{ mensajeAguinaldo }}</label>
+                            <div class="form-group row" ng-repeat="a in aguinaldos">
+                                <label class="card-text col-sm-4 col-for-label">Sueldo en {{ a.mes }}-{{ a.anio }}: </label>
+                                <div class="col-sm-8">
+                                    <input type="number" step=".01" class="form-control form-control-sm" ng-model="a.totalHaberes" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="card-text col-sm-4 col-for-label text-success">Total Haberes Gravados: </label>
+                                <div class="col-sm-8">
+                                    <input type="number" step=".01" class="form-control form-control-sm" ng-model="haberesGravados" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        <div ng-show="esSalarioVacacional">
+                            <div class="form-group row">
+                                <label class="card-text col-sm-4 col-for-label">Días a gozar: </label>
+                                <div class="col-sm-8">
+                                    <input type="number" step=".01" class="form-control form-control-sm" ng-model="sv.diasGozar" placeholder="Ej: 20" ng-change="calcularDiasSV()">
+                                </div>
+                            </div>
+                            <p ng-show="sv.tieneMensaje">{{ sv.mensaje }}</p>
+                            <div class="form-group row">
+                                <label class="card-text col-sm-4 col-for-label">Monto por día: </label>
+                                <div class="col-sm-8">
+                                    <input type="number" step=".01" class="form-control form-control-sm" ng-model="sv.montoSVdia" placeholder="Monto por día" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="card-text col-sm-4 col-for-label text-success">Total Haberes: </label>
+                                <div class="col-sm-8">
+                                    <input type="number" step=".01" class="form-control form-control-sm" ng-model="haberes" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        <div ng-show="esEgreso">
+                            <label>{{ egreso.mensaje }}</label>
+                            <label class="form-check-label" ng-show="!egreso.yaExiste">
+                                <input type="checkbox" class="form-check-input" ng-model="egreso.tieneIPD" ng-change="calcularEgreso()">
+                                Tiene IPD
+                            </label>
+                            <div class="form-group row" ng-show="!egreso.yaExiste">
+                                <label class="card-text col-sm-4 col-for-label">Fecha de egreso: </label>
+                                <div class="col-sm-8">
+                                    <input type="date" class="form-control form-control-sm" ng-model="egreso.fechaEgreso" placeholder="Fecha de Egreso" ng-change="calcularEgreso()">
+                                </div>
+                            </div>
+                            <div class="form-group row" ng-show="!egreso.yaExiste">
+                                <label class="card-text col-sm-4 col-for-label">Licencia no gozada: </label>
+                                <div class="col-sm-8">
+                                    <input type="number" step=".01" class="form-control form-control-sm" ng-model="egreso.licenciaNoGozada" placeholder="Licencia no gozada" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group row" ng-show="!egreso.yaExiste">
+                                <label class="card-text col-sm-4 col-for-label">Salario Vacacional por Egreso: </label>
+                                <div class="col-sm-8">
+                                    <input type="number" step=".01" class="form-control form-control-sm" ng-model="egreso.salarioVacacional" placeholder="SV por Egreso" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group row" ng-show="!egreso.yaExiste">
+                                <label class="card-text col-sm-4 col-for-label">Aguinaldo: </label>
+                                <div class="col-sm-8">
+                                    <input type="number" step=".01" class="form-control form-control-sm" ng-model="egreso.aguinaldo" placeholder="Aguinaldo" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group row" ng-show="egreso.tieneIPD && !egreso.yaExiste">
+                                <label class="card-text col-sm-4 col-for-label">Indemnización por Despido: </label>
+                                <div class="col-sm-8">
+                                    <input type="number" step=".01" class="form-control form-control-sm" ng-model="egreso.ipd" placeholder="Indemnización por Despido" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group row" ng-show="egreso.tieneIPD && !egreso.yaExiste">
+                                <label class="card-text col-sm-4 col-for-label">Alícuota Aguinaldo: </label>
+                                <div class="col-sm-8">
+                                    <input type="number" step=".01" class="form-control form-control-sm" ng-model="egreso.alicuotaAguinaldo" placeholder="Alícuota Aguinaldo" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group row" ng-show="egreso.tieneIPD && !egreso.yaExiste">
+                                <label class="card-text col-sm-4 col-for-label">Alícuota Licencia: </label>
+                                <div class="col-sm-8">
+                                    <input type="number" step=".01" class="form-control form-control-sm" ng-model="egreso.alicuotaLicencia" placeholder="Alícuota Licencia" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group row" ng-show="egreso.tieneIPD && !egreso.yaExiste">
+                                <label class="card-text col-sm-4 col-for-label">Alícuota Salario Vacacional: </label>
+                                <div class="col-sm-8">
+                                    <input type="number" step=".01" class="form-control form-control-sm" ng-model="egreso.alicuotaSV" placeholder="Alícuota Salario Vacacional" readonly>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <br>
+                    <div class="card col-lg-10 col-xl-10" ng-show="selected && !errorLiquidacion">
+                        <h6 class="card-header bg-danger text-white">DESCUENTOS</h6>
+                        <div class="card-block">
+                            <label class="form-check-label">
+                                <input type="checkbox" class="form-check-input" ng-model="liquidacion.tieneAdelanto" ng-change="updateAdelanto()">
+                                Adelanto
+                            </label>
+                            <label class="form-check-label">
+                                <input type="checkbox" class="form-check-input" ng-model="liquidacion.tieneRetencion" ng-change="updateRetencion()">
+                                Retención
+                            </label>
+                            <div class="form-group row">
+                                <label class="card-text col-sm-4 col-for-label">Aporte Jubilatorio: {{ valorAporteJubilatorio }}% de {{ haberesGravados }}</label>
+                                <div class="col-sm-8">
+                                    <input type="number" step=".01" class="form-control form-control-sm" ng-model="descuentoAporteJubilatorio" placeholder="No corresponde" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="card-text col-sm-4 col-for-label">FRL: {{ valorFRL }}% de {{ haberesGravados }}</label>
+                                <div class="col-sm-8">
+                                    <input type="number" step=".01" class="form-control form-control-sm" ng-model="descuentoFRL" placeholder="No corresponde" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="card-text col-sm-4 col-for-label">Seguro por Enfermedad: {{ valorSeguroPorEnfermedad }}% de {{ haberesGravados }}</label>
+                                <div class="col-sm-8">
+                                    <input type="number" step=".01" class="form-control form-control-sm" ng-model="descuentoSeguroPorEnfermedad" placeholder="No corresponde" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group row" ng-show="tieneAdicionalSNIS">
+                                <label class="card-text col-sm-4 col-for-label">Adicional SNIS: {{ valorAdicionalSNIS }}% de {{ haberesGravados }}</label>
+                                <div class="col-sm-8">
+                                    <input type="number" step=".01" class="form-control form-control-sm" ng-model="descuentoSNIS" placeholder="No corresponde" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group row" ng-show="liquidacion.tieneAdelanto">
+                                <label class="card-text col-sm-4 col-for-label">Monto adelantado: </label>
+                                <div class="col-sm-8">
+                                    <input type="number" step=".01" class="form-control form-control-sm" ng-model="liquidacion.adelanto" placeholder="Monto adelantado" ng-change="actualizarDatos()">
+                                </div>
+                            </div>
+                            <div class="form-group row" ng-show="liquidacion.tieneRetencion">
+                                <label class="card-text col-sm-4 col-for-label">Monto retención: </label>
+                                <div class="col-sm-8">
+                                    <input type="number" step=".01" class="form-control form-control-sm" ng-model="liquidacion.retencion" placeholder="Monto retención" ng-change="actualizarDatos()">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="card-text col-sm-4 col-for-label text-danger">Total Descuentos: </label>
+                                <div class="col-sm-8">
+                                    <input type="number" step=".01" class="form-control form-control-sm" ng-model="descuentos" placeholder="No corresponde" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="card-text col-sm-4 col-for-label text-danger">IRPF: </label>
+                                <div class="col-sm-8">
+                                    <input type="number" class="form-control form-control-sm" ng-model="montoIrpf" placeholder="No corresponde" readonly>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" ng-click="crearLiquidacion()" ng-disabled="formLiquidacionNueva.$invalid || !selected || errorLiquidacion" ng-show="!liquidacionEncontrada">Crear</button>
+                    <button type="submit" class="btn btn-primary" ng-click="editarLiquidacion()" ng-disabled="formLiquidacionNueva.$invalid || !selected || errorLiquidacion" ng-show="liquidacionEncontrada">Editar</button>
+                </div>
+                <br>
+                <label>{{ mensaje }}</label>
+            </div>
+        </form>
+    </div>
+</div>
