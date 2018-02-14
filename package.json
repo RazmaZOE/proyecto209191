@@ -19,6 +19,7 @@
     "method-override": "^2.3.10",
     "mongoose": "^4.13.2",
     "mongoose-bcrypt": "1.5.0",
-    "nodemon": "^1.12.1"
+    "nodemon": "^1.12.1",
+    "pdfkit": "^0.8.3"
   }
 }

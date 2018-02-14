@@ -41,6 +41,7 @@ module.exports = function(app) {
     app.get("/liquidaciones/buscar/:empresa/:nombre/:mes/:anio/:empleadoId", controladorLiquidacion.buscarLiquidacion);
     app.get("/liquidaciones/calcularDiasGozadosSV/:empresa/:empleadoId/:mes/:anio", controladorLiquidacion.calcularDiasGozados);
     app.get("/liquidaciones/calcularAguinaldo/:empresa/:nombre/:mes/:anio/:empleadoId", controladorLiquidacion.calcularAguinaldo);
+    app.post("/liquidaciones/imprimir", controladorLiquidacion.imprimirRecibos);
 
     app.get("*", function (req, res){
         res.sendFile("login.html", { root: "./vistas/"});

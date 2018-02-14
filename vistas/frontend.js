@@ -580,6 +580,37 @@ appEmpresa.controller("controladorEmpresaLiquidaciones", function($scope, $http,
         function respuestaError(respuesta){
             console.log("Error: " + respuesta.data);
         }
+
+        $scope.imprimirRecibos = function(){
+            console.log("vino a imprimir");
+            var liquidaciones = $scope.liquidaciones;
+            var liquidacionesImprimir = [];
+            if(liquidaciones != []){
+                liquidaciones.forEach(function(liq){
+                    if(liq.imprimir){
+                        liquidacionesImprimir.push(liq);
+                        console.log("Para imprimir: " + liquidacionesImprimir);
+                    }
+                });
+            }
+            if(liquidacionesImprimir != []){
+                $scope.imprimir = {};
+                $scope.imprimir.empresa = $scope.empresa;
+                $scope.imprimir.liquidaciones = liquidacionesImprimir;
+                $http.post("/liquidaciones/imprimir", $scope.imprimir).then(respuestaOk, respuestaError);
+
+                function respuestaOk(respuesta){
+                    console.log(respuesta);
+                    window.open(respuesta.data);
+                }
+                function respuestaError(respuesta){
+                    console.log("Error: " + respuesta);
+                }
+            }
+            else{
+                $scope.mensaje = "No hay recibos para imprimir";
+            }
+        }
     }
 });
 
@@ -686,6 +717,7 @@ appEmpresa.controller("controladorEmpresaLiquidacionNueva", function($scope, $ht
 
         function buscarLiquidacion(){
             $scope.fueEditado = false;
+            $scope.sv.tieneMensaje = false;
             var dateLiquidacion = new Date($scope.anio, $scope.mes - 1);
             var ingresoEmpleado = new Date($scope.empleadoSeleccionado.fechaIngreso);
             ingresoEmpleado.setDate(1);
@@ -702,6 +734,8 @@ appEmpresa.controller("controladorEmpresaLiquidacionNueva", function($scope, $ht
             console.log("undefined o null?: " + $scope.empleadoSeleccionado.fechaEgreso);
             if($scope.empleadoSeleccionado.fechaEgreso != null){
                 var dateEgreso = new Date($scope.empleadoSeleccionado.fechaEgreso);
+            }
+            if($scope.empleadoSeleccionado.fechaEgreso != null && ((dateEgreso.getFullYear() >= $scope.anio) && (dateEgreso.getMonth()+1) < $scope.mes)){
                 $scope.errorLiquidacion = true;
                 $scope.mensajeErrorLiquidaciones = "Error: empleado dado de baja el "  + dateEgreso.getDate() + "/" + (dateEgreso.getMonth()+1) + "/" + dateEgreso.getFullYear();
             }
@@ -735,6 +769,9 @@ appEmpresa.controller("controladorEmpresaLiquidacionNueva", function($scope, $ht
                             else{
                                 $scope.liquidacion.tieneHorasExtra = false;
                             }
+                        }
+                        else{
+                            $scope.liquidacion.sueldo = $scope.empleadoSeleccionado.sueldo;
                         }
                     }
                     if(respuesta.data.nombreLiquidacion == "Aguinaldo"){
@@ -778,6 +815,8 @@ appEmpresa.controller("controladorEmpresaLiquidacionNueva", function($scope, $ht
                             $scope.sv.monto = respuesta.data.info.totalHaberes;
                         }
                         else{
+                            $scope.sv.mensaje = "Seleccione días a gozar";
+                            $scope.sv.tieneMensaje = true;
                             $scope.sv.diasGozar = "";
                             $scope.sv.montoSVdia = "";
                             $scope.sv.monto = "";
@@ -789,14 +828,41 @@ appEmpresa.controller("controladorEmpresaLiquidacionNueva", function($scope, $ht
                         if(respuesta.data.info != ""){
                             console.log("Egreso: Entró a respuesta.data.info != ''")
                             respuesta.data.info.forEach(function(liquidacion){
-                                $scope.liquidacion.id = respuesta.data.info._id;
-                                var fechaActual = new Date($scope.anio, $scope.mes - 1); //porque va de 0 a 11
                                 // var mesEgreso = liquidacion.fechaEgreso.getMonth() + 1; //porque va de 0 a 11
                                 // var anioEgreso = liquidacion.fechaEgreso.getFullYear();
-                                if(liquidacion.fechaEgreso > $scope.empleadoSeleccionado.fechaIngreso){
-                                    // pregunto si hay alguna liquidacion posterior a la fecha de ingreso del empleado
-                                    $scope.egreso.yaExiste = true;
-                                    $scope.egreso.mensaje = "Error: ya se le dio de baja a este empleado"
+                                fechaEgreso = new Date($scope.empleadoSeleccionado.fechaEgreso);
+                                fechaIngreso = new Date($scope.empleadoSeleccionado.fechaIngreso);
+                                if(fechaEgreso.getFullYear() == $scope.anio){
+                                    if(fechaEgreso.getMonth()+1 == $scope.mes){
+                                        $scope.liquidacion.id = liquidacion._id;
+                                        $scope.liquidacionEncontrada = true;
+                                        $scope.fechaLiquidacion = liquidacion.fechaLiquidacion;
+                                        $scope.egreso.fechaEgreso = fechaEgreso;
+                                        $scope.egreso.licenciaNoGozada = liquidacion.egresoLicenciaNoGozada;
+                                        $scope.egreso.salarioVacacional = liquidacion.egresoSV;
+                                        $scope.egreso.aguinaldo = liquidacion.egresoAguinaldo;
+                                        if(liquidacion.egresoIPD != 0){
+                                            $scope.egreso.tieneIPD = true;
+                                            $scope.egreso.ipd = liquidacion.egresoIPD
+                                            $scope.egreso.alicuotaAguinaldo = liquidacion.egresoAlicuotaAguinaldo;
+                                            $scope.egreso.alicuotaLicencia = liquidacion.egresoAlicuotaLicencia;
+                                            $scope.egreso.alicuotaSV = liquidacion.egresoAlicuotaSV;
+                                        }
+                                    }
+                                    else{
+                                        if(fechaEgreso > fechaIngreso){
+                                            $scope.egreso.yaExiste = true;
+                                            $scope.errorLiquidacion = true;
+                                            $scope.mensaje = "Error: ya se le dio de baja a este empleado"
+                                        }
+                                    }
+                                }
+                                else{
+                                    if(fechaEgreso > fechaIngreso){
+                                        $scope.egreso.yaExiste = true;
+                                        $scope.errorLiquidacion = true;
+                                        $scope.mensaje = "Error: ya se le dio de baja a este empleado"
+                                    }
                                 }
                             });
                         }
@@ -953,6 +1019,7 @@ appEmpresa.controller("controladorEmpresaLiquidacionNueva", function($scope, $ht
                 $scope.sv.diasGozar = 0;
             }
             console.log("El Scope de días a Gozar: " + $scope.sv.diasGozar);
+            $scope.sv.tieneMensaje = false;
             $scope.sv.sueldo = $scope.empleadoSeleccionado.sueldo;
             $scope.sv.empleadoId = $scope.empleadoSeleccionado._id;
             $scope.sv.mesLiquidacion = $scope.mes;
@@ -1318,6 +1385,7 @@ appEmpresa.controller("controladorEmpresaLiquidacionNueva", function($scope, $ht
             $scope.nuevaLiq.anio = $scope.anio;
             $scope.nuevaLiq.empleadoId = $scope.empleadoSeleccionado._id;
             $scope.nuevaLiq.empleadoCi = $scope.empleadoSeleccionado.ci;
+            $scope.nuevaLiq.empleado = $scope.empleadoSeleccionado;
             $scope.nuevaLiq.sueldo = $scope.liquidacion.sueldo;
             $scope.nuevaLiq.cantidadFaltas = $scope.liquidacion.faltas;
             $scope.nuevaLiq.descuentoFaltas = $scope.empleadoSeleccionado.descuentoFaltas;
@@ -1344,7 +1412,7 @@ appEmpresa.controller("controladorEmpresaLiquidacionNueva", function($scope, $ht
             $scope.nuevaLiq.descuentoSNIS = $scope.descuentoSNIS;
             $scope.nuevaLiq.irpf = $scope.montoIrpf;
             $scope.nuevaLiq.totalDescuentos = $scope.descuentos;
-            $scope.nuevaLiq.liquidoCobrar = $scope.liquidoCobrar;
+            $scope.nuevaLiq.liquidoCobrar = Math.round($scope.liquidoCobrar * 100) / 100;
             $scope.nuevaLiq.diasGozarSV = "";
             $scope.nuevaLiq.montoDiaSV = "";
             $scope.nuevaLiq.egresoAguinaldo = "";
@@ -1438,6 +1506,7 @@ appEmpresa.controller("controladorEmpresaLiquidacionNueva", function($scope, $ht
             $scope.nuevaLiq.anio = $scope.anio;
             $scope.nuevaLiq.empleadoId = $scope.empleadoSeleccionado._id;
             $scope.nuevaLiq.empleadoCi = $scope.empleadoSeleccionado.ci;
+            $scope.nuevaLiq.empleado = $scope.empleadoSeleccionado;
             $scope.nuevaLiq.sueldo = $scope.liquidacion.sueldo;
             $scope.nuevaLiq.cantidadFaltas = $scope.liquidacion.faltas;
             $scope.nuevaLiq.descuentoFaltas = $scope.empleadoSeleccionado.descuentoFaltas;
@@ -1464,7 +1533,7 @@ appEmpresa.controller("controladorEmpresaLiquidacionNueva", function($scope, $ht
             $scope.nuevaLiq.descuentoSNIS = $scope.descuentoSNIS;
             $scope.nuevaLiq.irpf = $scope.montoIrpf;
             $scope.nuevaLiq.totalDescuentos = $scope.descuentos;
-            $scope.nuevaLiq.liquidoCobrar = $scope.liquidoCobrar;
+            $scope.nuevaLiq.liquidoCobrar = Math.round($scope.liquidoCobrar * 100) / 100;
             $scope.nuevaLiq.diasGozarSV = "";
             $scope.nuevaLiq.montoDiaSV = "";
             $scope.nuevaLiq.egresoAguinaldo = "";

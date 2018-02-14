@@ -2,6 +2,7 @@
     <nav class="navbar navbar-expand-sm bg-primary navbar-dark">
         <ul class="navbar-nav">
             <li class="nav-item"><a class="nav-link" href='liquidaciones'>Liquidaciones</a></li>
+            <li class="nav-item"><a class="nav-link" href='empleados'>Empleados</a></li>
             <li class="nav-item"><a class="nav-link" href='empresas'>Empresas</a></li>  
             <li class="nav-item"><a class="nav-link" href='cerrarSesion'>Cerrar Sesión</a></li>           
         </ul>
@@ -9,7 +10,7 @@
 </div>
 <div class="container">
     <div class="row justify-content-md-center">
-        <div class="col-10">
+        <div>
             <br>
             <br>
             <br>
@@ -66,19 +67,25 @@
                         </div>
                     </div>
                     <div class="form-group row">
+                        <label class="col-6 col-form-label">Cargo</label>
+                        <div class="col-6">
+                            <input type="text" class="form-control" placeholder="Ej: Gerente" ng-model="empleadoNuevo.cargo">
+                        </div>
+                    </div>
+                    <div class="form-group row">
                         <label class="col-6 col-form-label">Banco</label>
                         <div class="col-6">
                             <input type="text" class="form-control" placeholder="Ej: BROU" ng-model="empleadoNuevo.banco">
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label class="col-6 col-form-label">Número de Sucursal del banco</label>
+                        <label class="col-6 col-form-label">Número de Sucursal Banco</label>
                         <div class="col-6">
                             <input type="text" class="form-control" placeholder="Ej: 194" ng-model="empleadoNuevo.numSucursalBanco">
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label class="col-6 col-form-label">Número de cuenta del banco</label>
+                        <label class="col-6 col-form-label">Número de Cuenta Banco</label>
                         <div class="col-6">
                             <input type="text" class="form-control" placeholder="Ej: 123456" ng-model="empleadoNuevo.numCuentaBanco">
                         </div>

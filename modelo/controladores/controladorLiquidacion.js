@@ -1,5 +1,8 @@
 var Liquidacion = require("../clases/liquidacion");
 var Empleado = require("../clases/empleado");
+var Empresa = require("../clases/empresa");
+var PDFDocument = require("pdfkit");
+var fs = require("fs");
 
 exports.getLiquidaciones = function(req, res){
     Liquidacion.find({empresa: req.params.empresa},
@@ -430,6 +433,9 @@ exports.calcularIrpf = function(req, res){
                 totalAnual = totalAnual - totalIrpfEneNov;
                 totalAnual = Math.round(totalAnual);
                 console.log("IRPF Anual total después descuentos: " + totalAnual);
+                if(totalAnual<0){
+                    totalAnual = 0;
+                }
 
                 res.send(totalAnual.toString());
                 // res.json({
@@ -739,6 +745,7 @@ exports.guardarNueva = function(req, res){
         mesAnio: dateMesAnio,
         empleadoId: req.body.empleadoId,
         empleadoCi: req.body.empleadoCi,
+        empleado: req.body.empleado,
         sueldo: req.body.sueldo,
         cantidadFaltas: req.body.cantidadFaltas,
         descuentoFaltas: req.body.descuentoFaltas,
@@ -804,6 +811,7 @@ exports.editarLiquidacion = function(req, res){
         mesAnio: dateMesAnio,
         empleadoId: req.body.empleadoId,
         empleadoCi: req.body.empleadoCi,
+        empleado: req.body.empleado,
         sueldo: req.body.sueldo,
         cantidadFaltas: req.body.cantidadFaltas,
         descuentoFaltas: req.body.descuentoFaltas,
@@ -959,4 +967,2964 @@ exports.buscarLiquidacion = function(req, res){
             }
         );
     }
+};
+
+exports.imprimirRecibos = function(req, res){
+    var doc = new PDFDocument({
+        size: "A4",
+        autoFirstPage: false,
+        margins: {
+            top: 72, 
+            bottom: 18,
+            left: 72,
+            right: 18
+        }
+    }); 
+
+    var liquidaciones = req.body.liquidaciones;
+    var empresa = {};
+
+    var queryEmpresa = { nombre: req.body.empresa };
+    Empresa.findOne(queryEmpresa, 
+        function(err, empresaLiq){
+            if(err){
+                empresa = {};
+            }
+            else{
+                if(empresaLiq != null){
+                    empresa = empresaLiq;
+                    liquidaciones.forEach(function(liq){
+                        console.log(empresa);
+                        console.log(liq.empleado);
+
+                        doc.addPage();
+
+                        doc.moveTo(350, 38)
+                        .lineTo(580, 38)
+                        .stroke();  
+
+                        doc.moveTo(20, 95)
+                        .lineTo(30, 95)
+                        .stroke();
+
+                        doc.moveTo(150, 95)
+                        .lineTo(580, 95)
+                        .stroke();   
+
+                        doc.moveTo(20, 148)
+                        .lineTo(580, 148)
+                        .stroke();
+
+                        doc.moveTo(20, 163)
+                        .lineTo(580, 163)
+                        .stroke();
+
+                        doc.moveTo(280, 163)
+                        .lineTo(280, 300)
+                        .stroke();
+
+                        doc.moveTo(20, 300)
+                        .lineTo(580, 300)
+                        .stroke();
+
+                        doc.moveTo(20, 312)
+                        .lineTo(580, 312)
+                        .stroke();
+
+                        doc.moveTo(420, 375)
+                        .lineTo(580, 375)
+                        .stroke();
+
+                        doc.x = 20;
+                        doc.y = 20;
+                        doc.fillColor('black')
+                        doc.fontSize(16);
+                        doc.text(empresa.razonSocial, {
+                            align: "left",
+                        });
+
+                        doc.x = 20;
+                        doc.y = 45;
+                        doc.fillColor('black')
+                        doc.fontSize(9);
+                        doc.text("Dirección: " + empresa.direccion, {
+                            align: "left",
+                        });
+
+                        doc.x = 20;
+                        doc.y = 60;
+                        doc.fillColor('black')
+                        doc.fontSize(9);
+                        doc.text("RUT: " + empresa.numRut, {
+                            align: "left",
+                        });
+
+                        doc.x = 20;
+                        doc.y = 75;
+                        doc.fillColor('black')
+                        doc.fontSize(9);
+                        doc.text("BPS: " + empresa.numBps, {
+                            align: "left",
+                        });
+
+                        doc.x = 250;
+                        doc.y = 45;
+                        doc.fillColor('black')
+                        doc.fontSize(9);
+                        doc.text("BSE: " + empresa.numBps, {
+                            align: "left",
+                        });
+
+                        doc.x = 250;
+                        doc.y = 60;
+                        doc.fillColor('black')
+                        doc.fontSize(9);
+                        doc.text("MTSS: " + empresa.numMtss, {
+                            align: "left",
+                        });
+
+                        doc.x = 250;
+                        doc.y = 75;
+                        doc.fillColor('black')
+                        doc.fontSize(9);
+                        doc.text("Grupo - Subgrupo: " + empresa.grupo + " - " + empresa.subgrupo , {
+                            align: "left",
+                        });
+
+                        doc.x = 400;
+                        doc.y = 50;
+                        doc.fillColor('black')
+                        doc.fontSize(11);
+                        doc.text("Fecha: " + liq.mes + "-" + liq.anio, {
+                            align: "right",
+                        });
+
+                        doc.x = 400;
+                        doc.y = 70;
+                        doc.fillColor('black')
+                        doc.fontSize(11);
+                        doc.text("Liquidación: " + liq.nombre, {
+                            align: "right",
+                        });
+
+                        doc.x = 44;
+                        doc.y = 92;
+                        doc.fillColor('black')
+                        doc.fontSize(10);
+                        doc.text("Datos del empleado", {
+                            align: "left",
+                        });
+
+                        doc.x = 20;
+                        doc.y = 105;
+                        doc.fillColor('black')
+                        doc.fontSize(8);
+                        doc.text("Nombres: " + liq.empleado.nombres, {
+                            align: "left",
+                        });
+
+                        doc.x = 20;
+                        doc.y = 120;
+                        doc.fillColor('black')
+                        doc.fontSize(8);
+                        doc.text("Apellidos: " + liq.empleado.apellidos, {
+                            align: "left",
+                        });
+
+                        doc.x = 20;
+                        doc.y = 135;
+                        doc.fillColor('black')
+                        doc.fontSize(8);
+                        doc.text("C.I.: " + liq.empleado.ci, {
+                            align: "left",
+                        });
+
+                        doc.x = 175;
+                        doc.y = 105;
+                        doc.fillColor('black')
+                        doc.fontSize(8);
+                        doc.text("Sector: Sector único", {
+                            align: "left",
+                        });
+
+                        doc.x = 175;
+                        doc.y = 120;
+                        doc.fillColor('black')
+                        doc.fontSize(8);
+                        doc.text("Cargo: " + liq.empleado.cargo, {
+                            align: "left",
+                        });
+
+                        doc.x = 175;
+                        doc.y = 135;
+                        doc.fillColor('black')
+                        doc.fontSize(8);
+                        doc.text("Horario: " + liq.empleado.horario, {
+                            align: "left",
+                        });
+
+                        doc.x = 325;
+                        doc.y = 105;
+                        doc.fillColor('black')
+                        doc.fontSize(8);
+                        doc.text("Banco: " + liq.empleado.banco, {
+                            align: "left",
+                        });
+
+                        doc.x = 325;
+                        doc.y = 120;
+                        doc.fillColor('black')
+                        doc.fontSize(8);
+                        doc.text("Sucursal Banco: " + liq.empleado.numSucursalBanco, {
+                            align: "left",
+                        });
+
+                        doc.x = 325;
+                        doc.y = 135;
+                        doc.fillColor('black')
+                        doc.fontSize(8);
+                        doc.text("Nº de cuenta: " + liq.empleado.numCuentaBanco, {
+                            align: "left",
+                        });
+
+                        var fechaIngreso = new Date(liq.empleado.fechaIngreso);
+                        doc.x = 450;
+                        doc.y = 112;
+                        doc.fillColor('black')
+                        doc.fontSize(8);
+                        doc.text("Fecha ingreso: " + (fechaIngreso.getDate() + "-" +  (fechaIngreso.getMonth()+1) + "-" + fechaIngreso.getFullYear()), {
+                            align: "left",
+                        });
+
+                        if(liq.empleado.fechaEgreso != null){
+                            var fechaEgreso = new Date(liq.empleado.fechaEgreso);
+                            doc.x = 450;
+                            doc.y = 127;
+                            doc.fillColor('black')
+                            doc.fontSize(8);
+                            doc.text("Fecha egreso: " + (fechaEgreso.getDate() + "-" + fechaEgreso.getMonth()+1) + "-" + fechaEgreso.getFullYear(), {
+                                align: "left",
+                            });
+                        }
+                        else{
+                            doc.x = 450;
+                            doc.y = 127;
+                            doc.fillColor('black')
+                            doc.fontSize(8);
+                            doc.text("Fecha egreso: ", {
+                                align: "left",
+                            });
+                        }
+
+                        doc.x = 45;
+                        doc.y = 152;
+                        doc.fillColor('black')
+                        doc.fontSize(11);
+                        doc.text("HABERES", {
+                            align: "left",
+                        });
+
+                        doc.x = 320;
+                        doc.y = 152;
+                        doc.fillColor('black')
+                        doc.fontSize(11);
+                        doc.text("DESCUENTOS", {
+                            align: "left",
+                        });
+
+                        var alturaHaberes = 170;
+                        doc.x = 25;
+                        doc.y = alturaHaberes;
+                        doc.fillColor('black')
+                        doc.fontSize(10);
+                        doc.text("Nombre", {
+                            align: "left",
+                        });
+
+                        doc.x = 160;
+                        doc.y = alturaHaberes;
+                        doc.fillColor('black')
+                        doc.fontSize(10);
+                        doc.text("Detalle", {
+                            align: "left",
+                        });
+
+                        doc.x = 230;
+                        doc.y = alturaHaberes;
+                        doc.fillColor('black')
+                        doc.fontSize(10);
+                        doc.text("Importe", {
+                            align: "left",
+                        });
+
+                        var alturaDescuentos = 170;
+                        doc.x = 290;
+                        doc.y = alturaDescuentos;
+                        doc.fillColor('black')
+                        doc.fontSize(10);
+                        doc.text("Nombre", {
+                            align: "left",
+                        });
+
+                        doc.x = 425;
+                        doc.y = alturaDescuentos;
+                        doc.fillColor('black')
+                        doc.fontSize(10);
+                        doc.text("Detalle", {
+                            align: "left",
+                        });
+
+                        doc.x = 500;
+                        doc.y = alturaDescuentos;
+                        doc.fillColor('black')
+                        doc.fontSize(10);
+                        doc.text("Importe", {
+                            align: "left",
+                        });
+
+                        if(liq.nombre == "Sueldo"){
+                            alturaHaberes = alturaHaberes + 12;
+                            doc.x = 25;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text("Sueldo", {
+                                align: "left",
+                            });
+                    
+                            doc.x = 160;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text("", {
+                                align: "center",
+                                width: 25,
+                            });
+                    
+                            doc.x = 220;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text(liq.sueldo, {
+                                align: "right",
+                                width: 45,
+                            });
+                            
+                            if(liq.cantidadFaltas != null){
+                                if(liq.cantidadFaltas != 0){
+                                    alturaHaberes = alturaHaberes + 12;
+                                    doc.x = 25;
+                                    doc.y = alturaHaberes;
+                                    doc.fillColor('black')
+                                    doc.fontSize(9);
+                                    doc.text("Faltas", {
+                                        align: "left",
+                                    });
+                            
+                                    doc.x = 160;
+                                    doc.y = alturaHaberes;
+                                    doc.fillColor('black')
+                                    doc.fontSize(9);
+                                    doc.text(liq.cantidadFaltas, {
+                                        align: "center",
+                                        width: 25,
+                                    });
+                            
+                                    doc.x = 220;
+                                    doc.y = alturaHaberes;
+                                    doc.fillColor('black')
+                                    doc.fontSize(9);
+                                    doc.text("- " + liq.descuentoFaltas, {
+                                        align: "right",
+                                        width: 45,
+                                    });
+                                }
+                            }
+                            
+                            if(liq.cantidadHorasExtra != null){
+                                if(liq.cantidadHorasExtra != 0){
+                                    alturaHaberes = alturaHaberes + 12;
+                                    doc.x = 25;
+                                    doc.y = alturaHaberes;
+                                    doc.fillColor('black')
+                                    doc.fontSize(9);
+                                    doc.text("Horas Extra", {
+                                        align: "left",
+                                    });
+                            
+                                    doc.x = 160;
+                                    doc.y = alturaHaberes;
+                                    doc.fillColor('black')
+                                    doc.fontSize(9);
+                                    doc.text(liq.cantidadHorasExtra, {
+                                        align: "center",
+                                        width: 25,
+                                    });
+                            
+                                    doc.x = 220;
+                                    doc.y = alturaHaberes;
+                                    doc.fillColor('black')
+                                    doc.fontSize(9);
+                                    doc.text(liq.montoHorasExtra, {
+                                        align: "right",
+                                        width: 45,
+                                    });
+                                }
+                            }
+                            
+                            if(liq.montoFictoPropina != null){
+                                if(liq.montoFictoPropina != 0){
+                                    alturaHaberes = alturaHaberes + 12;
+                                    doc.x = 25;
+                                    doc.y = alturaHaberes;
+                                    doc.fillColor('black')
+                                    doc.fontSize(9);
+                                    doc.text("Ficto Propina", {
+                                        align: "left",
+                                    });
+                            
+                                    doc.x = 160;
+                                    doc.y = alturaHaberes;
+                                    doc.fillColor('black')
+                                    doc.fontSize(9);
+                                    doc.text("", {
+                                        align: "center",
+                                        width: 25,
+                                    });
+                            
+                                    doc.x = 220;
+                                    doc.y = alturaHaberes;
+                                    doc.fillColor('black')
+                                    doc.fontSize(9);
+                                    doc.text(liq.montoFictoPropina, {
+                                        align: "right",
+                                        width: 45,
+                                    });
+                                }
+                            }
+                            
+                            if(liq.montoDescansoTrabajado != null && liq.montoDescansoTrabajado != 0){
+                                alturaHaberes = alturaHaberes + 12;
+                                doc.x = 25;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Descanso Trabajado", {
+                                    align: "left",
+                                });
+                        
+                                doc.x = 160;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("1", {
+                                    align: "center",
+                                    width: 25,
+                                });
+                        
+                                doc.x = 220;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("1000", {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.montoFeriadoPago != null && liq.montoFeriadoPago != 0){
+                                alturaHaberes = alturaHaberes + 12;
+                                doc.x = 25;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Feriado Pago", {
+                                    align: "left",
+                                });
+                        
+                                doc.x = 160;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.cantidadFeriadoPago, {
+                                    align: "center",
+                                    width: 25,
+                                });
+                        
+                                doc.x = 220;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.montoFeriadoPago, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.montoPrimaPorAntiguedad != null && liq.montoPrimaPorAntiguedad != 0){
+                                alturaHaberes = alturaHaberes + 12;
+                                doc.x = 25;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Prima por Antigüedad", {
+                                    align: "left",
+                                });
+                        
+                                doc.x = 160;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("", {
+                                    align: "center",
+                                    width: 25,
+                                });
+                        
+                                doc.x = 220;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.montoPrimaPorAntiguedad, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.montoPrimaPorProductividad != null && liq.montoPrimaPorProductividad != 0){
+                                alturaHaberes = alturaHaberes + 12;
+                                doc.x = 25;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Prima por Productividad", {
+                                    align: "left",
+                                });
+                        
+                                doc.x = 160;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("", {
+                                    align: "center",
+                                    width: 25,
+                                });
+                        
+                                doc.x = 220;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(lqi.montoPrimaPorProductividad, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }   
+
+                            if(liq.descuentoAporteJubilatorio != null && liq.descuentoAporteJubilatorio != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Aporte Jubilatorio", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.valorAporteJubilatorio + "%", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.descuentoAporteJubilatorio, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.descuentoFRL != null && liq.descuentoFRL != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("FRL", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.valorFRL + "%", {
+                                    align: "center",
+                                    width: 35,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.descuentoFRL, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.descuentoSeguroPorEnfermedad != null && liq.descuentoSeguroPorEnfermedad != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Seguro por Enfermedad", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.valorSeguroPorEnfermedad + "%", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.descuentoSeguroPorEnfermedad, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.valorAdicionalSNIS != null && liq.valorAdicionalSNIS != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Adicional SNIS", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.valorAdicionalSNIS + "%", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.descuentoSNIS, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.irpf != null){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("IRPF", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.irpf, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.montoAdelantos != null && liq.montoAdelantos != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Adelantos", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.montoAdelantos, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.montoRetenciones != null && liq.montoRetenciones != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Retenciones", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.montoRetenciones, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                        }
+
+                        if(liq.nombre == "Aguinaldo"){
+                            alturaHaberes = alturaHaberes + 12;
+                            doc.x = 25;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text("Aguinaldo", {
+                                align: "left",
+                            });
+                    
+                            doc.x = 160;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text("", {
+                                align: "center",
+                                width: 25,
+                            });
+                    
+                            doc.x = 220;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text(liq.totalHaberesGravados, {
+                                align: "right",
+                                width: 45,
+                            });
+
+                            if(liq.descuentoAporteJubilatorio != null && liq.descuentoAporteJubilatorio != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Aporte Jubilatorio", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.valorAporteJubilatorio + "%", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.descuentoAporteJubilatorio, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.descuentoFRL != null && liq.descuentoFRL != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("FRL", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.valorFRL + "%", {
+                                    align: "center",
+                                    width: 35,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.descuentoFRL, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.descuentoSeguroPorEnfermedad != null && liq.descuentoSeguroPorEnfermedad != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Seguro por Enfermedad", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.valorSeguroPorEnfermedad + "%", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.descuentoSeguroPorEnfermedad, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.valorAdicionalSNIS != null && liq.valorAdicionalSNIS != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Adicional SNIS", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.valorAdicionalSNIS + "%", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.descuentoSNIS, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.montoAdelantos != null && liq.montoAdelantos != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Adelantos", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.montoAdelantos, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.montoRetenciones != null && liq.montoRetenciones != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Retenciones", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.montoRetenciones, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                        }
+
+                        if(liq.nombre == "Salario Vacacional"){
+                            alturaHaberes = alturaHaberes + 12;
+                            doc.x = 25;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text("Salario Vacacional", {
+                                align: "left",
+                            });
+                    
+                            doc.x = 160;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text(liq.diasGozarSV + " x " + liq.montoDiaSV, {
+                                align: "center",
+                                width: 60,
+                            });
+                    
+                            doc.x = 220;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text(liq.totalHaberes, {
+                                align: "right",
+                                width: 45,
+                            });
+                            
+                            if(liq.montoAdelantos != null && liq.montoAdelantos != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Adelantos", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.montoAdelantos, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.montoRetenciones != null && liq.montoRetenciones != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Retenciones", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.montoRetenciones, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                        }
+
+                        if(liq.nombre == "Egreso"){
+                            alturaHaberes = alturaHaberes + 12;
+                            doc.x = 25;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text("Licencia no gozada", {
+                                align: "left",
+                            });
+                    
+                            doc.x = 160;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text("", {
+                                align: "center",
+                                width: 25,
+                            });
+                    
+                            doc.x = 220;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text(liq.egresoLicenciaNoGozada, {
+                                align: "right",
+                                width: 45,
+                            });
+                            
+                           
+                            alturaHaberes = alturaHaberes + 12;
+                            doc.x = 25;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text("Sal. Vac. por egreso", {
+                                align: "left",
+                            });
+                    
+                            doc.x = 160;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text("", {
+                                align: "center",
+                                width: 25,
+                            });
+                    
+                            doc.x = 220;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text(liq.egresoSV, {
+                                align: "right",
+                                width: 45,
+                            });
+
+                            
+                            alturaHaberes = alturaHaberes + 12;
+                            doc.x = 25;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text("Aguinaldo", {
+                                align: "left",
+                            });
+                    
+                            doc.x = 160;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text("", {
+                                align: "center",
+                                width: 25,
+                            });
+                    
+                            doc.x = 220;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text(liq.totalHaberesGravados, {
+                                align: "right",
+                                width: 45,
+                            });
+                            
+                            if(liq.egresoIPD != 0){
+                                alturaHaberes = alturaHaberes + 12;
+                                doc.x = 25;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Indemn. por despido", {
+                                    align: "left",
+                                });
+                        
+                                doc.x = 160;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("", {
+                                    align: "center",
+                                    width: 25,
+                                });
+                        
+                                doc.x = 220;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.egresoIPD, {
+                                    align: "right",
+                                    width: 45,
+                                });
+
+                                alturaHaberes = alturaHaberes + 12;
+                                doc.x = 25;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Alícuota IPD Aguinaldo", {
+                                    align: "left",
+                                });
+                        
+                                doc.x = 160;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("", {
+                                    align: "center",
+                                    width: 25,
+                                });
+                        
+                                doc.x = 220;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.egresoAlicuotaAguinaldo, {
+                                    align: "right",
+                                    width: 45,
+                                });
+
+                                alturaHaberes = alturaHaberes + 12;
+                                doc.x = 25;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Alícuota IPD Licencia ", {
+                                    align: "left",
+                                });
+                        
+                                doc.x = 160;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("", {
+                                    align: "center",
+                                    width: 25,
+                                });
+                        
+                                doc.x = 220;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.egresoAlicuotaLicencia, {
+                                    align: "right",
+                                    width: 45,
+                                });
+
+                                alturaHaberes = alturaHaberes + 12;
+                                doc.x = 25;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Alícuoua IPD SV", {
+                                    align: "left",
+                                });
+                        
+                                doc.x = 160;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("", {
+                                    align: "center",
+                                    width: 25,
+                                });
+                        
+                                doc.x = 220;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.egresoAlicuotaSV, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.descuentoAporteJubilatorio != null && liq.descuentoAporteJubilatorio != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Aporte Jubilatorio", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.valorAporteJubilatorio + "%", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.descuentoAporteJubilatorio, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.descuentoFRL != null && liq.descuentoFRL != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("FRL", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.valorFRL + "%", {
+                                    align: "center",
+                                    width: 35,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.descuentoFRL, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.descuentoSeguroPorEnfermedad != null && liq.descuentoSeguroPorEnfermedad != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Seguro por Enfermedad", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.valorSeguroPorEnfermedad + "%", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.descuentoSeguroPorEnfermedad, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.valorAdicionalSNIS != null && liq.valorAdicionalSNIS != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Adicional SNIS", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.valorAdicionalSNIS + "%", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.descuentoSNIS, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.irpf != null){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("IRPF", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.irpf, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.montoAdelantos != null && liq.montoAdelantos != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Adelantos", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.montoAdelantos, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.montoRetenciones != null && liq.montoRetenciones != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Retenciones", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.montoRetenciones, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                        }
+
+                        doc.x = 25;
+                        doc.y = 303;
+                        doc.fillColor('black')
+                        doc.fontSize(9);
+                        doc.text("Total Gravado: " + liq.totalHaberesGravados, {
+                            align: "left",
+                        });
+                        
+                        doc.x = 150;
+                        doc.y = 303;
+                        doc.fillColor('black')
+                        doc.fontSize(9);
+                        doc.text("Total de Haberes: " + liq.totalHaberes, {
+                            align: "left",
+                        });
+
+                        doc.x = 400;
+                        doc.y = 303;
+                        doc.fillColor('black')
+                        doc.fontSize(9);
+                        doc.text("Total de Descuentos: " + liq.totalDescuentos, {
+                            align: "right",
+                        });
+
+                        doc.x = 400;
+                        doc.y = 340;
+                        doc.font("Helvetica-Bold")
+                        doc.fillColor('black')
+                        doc.fontSize(11);
+                        doc.text("Líquido a Cobrar: " + liq.liquidoCobrar, {
+                            align: "right",
+                        });
+
+                        doc.x = 490;
+                        doc.y = 378;
+                        doc.font("Helvetica")
+                        doc.fillColor('black')
+                        doc.fontSize(7);
+                        doc.text("Firma", {
+                            align: "left",
+                        });
+
+                        //Copiar la parte de abajo
+                        var copia = 420; 
+
+                        doc.moveTo(350, 38 + copia)
+                        .lineTo(580, 38 + copia)
+                        .stroke();  
+
+                        doc.moveTo(20, 95+ copia)
+                        .lineTo(30, 95+ copia)
+                        .stroke();
+
+                        doc.moveTo(150, 95+ copia)
+                        .lineTo(580, 95+ copia)
+                        .stroke();   
+
+                        doc.moveTo(20, 148+ copia)
+                        .lineTo(580, 148+ copia)
+                        .stroke();
+
+                        doc.moveTo(20, 163+ copia)
+                        .lineTo(580, 163+ copia)
+                        .stroke();
+
+                        doc.moveTo(280, 163+ copia)
+                        .lineTo(280, 300+ copia)
+                        .stroke();
+
+                        doc.moveTo(20, 300+ copia)
+                        .lineTo(580, 300+ copia)
+                        .stroke();
+
+                        doc.moveTo(20, 312+ copia)
+                        .lineTo(580, 312+ copia)
+                        .stroke();
+
+                        doc.moveTo(420, 375+ copia)
+                        .lineTo(580, 375+ copia)
+                        .stroke();
+
+                        doc.x = 20;
+                        doc.y = 20 + copia;
+                        doc.fillColor('black')
+                        doc.fontSize(16);
+                        doc.text(empresa.razonSocial, {
+                            align: "left",
+                        });
+
+                        doc.x = 20;
+                        doc.y = 45+ copia;
+                        doc.fillColor('black')
+                        doc.fontSize(9);
+                        doc.text("Dirección: " + empresa.direccion, {
+                            align: "left",
+                        });
+
+                        doc.x = 20;
+                        doc.y = 60+ copia;
+                        doc.fillColor('black')
+                        doc.fontSize(9);
+                        doc.text("RUT: " + empresa.numRut, {
+                            align: "left",
+                        });
+
+                        doc.x = 20;
+                        doc.y = 75+ copia;
+                        doc.fillColor('black')
+                        doc.fontSize(9);
+                        doc.text("BPS: " + empresa.numBps, {
+                            align: "left",
+                        });
+
+                        doc.x = 250;
+                        doc.y = 45+ copia;
+                        doc.fillColor('black')
+                        doc.fontSize(9);
+                        doc.text("BSE: " + empresa.numBps, {
+                            align: "left",
+                        });
+
+                        doc.x = 250;
+                        doc.y = 60+ copia;
+                        doc.fillColor('black')
+                        doc.fontSize(9);
+                        doc.text("MTSS: " + empresa.numMtss, {
+                            align: "left",
+                        });
+
+                        doc.x = 250;
+                        doc.y = 75+ copia;
+                        doc.fillColor('black')
+                        doc.fontSize(9);
+                        doc.text("Grupo - Subgrupo: " + empresa.grupo + " - " + empresa.subgrupo , {
+                            align: "left",
+                        });
+
+                        doc.x = 400;
+                        doc.y = 50+ copia;
+                        doc.fillColor('black')
+                        doc.fontSize(11);
+                        doc.text("Fecha: " + liq.mes + "-" + liq.anio, {
+                            align: "right",
+                        });
+
+                        doc.x = 400;
+                        doc.y = 70+ copia;
+                        doc.fillColor('black')
+                        doc.fontSize(11);
+                        doc.text("Liquidación: " + liq.nombre, {
+                            align: "right",
+                        });
+
+                        doc.x = 44;
+                        doc.y = 92+ copia;
+                        doc.fillColor('black')
+                        doc.fontSize(10);
+                        doc.text("Datos del empleado", {
+                            align: "left",
+                        });
+
+                        doc.x = 20;
+                        doc.y = 105+ copia;
+                        doc.fillColor('black')
+                        doc.fontSize(8);
+                        doc.text("Nombres: " + liq.empleado.nombres, {
+                            align: "left",
+                        });
+
+                        doc.x = 20;
+                        doc.y = 120+ copia;
+                        doc.fillColor('black')
+                        doc.fontSize(8);
+                        doc.text("Apellidos: " + liq.empleado.apellidos, {
+                            align: "left",
+                        });
+
+                        doc.x = 20;
+                        doc.y = 135+ copia;
+                        doc.fillColor('black')
+                        doc.fontSize(8);
+                        doc.text("C.I.: " + liq.empleado.ci, {
+                            align: "left",
+                        });
+
+                        doc.x = 175;
+                        doc.y = 105+ copia;
+                        doc.fillColor('black')
+                        doc.fontSize(8);
+                        doc.text("Sector: Sector único", {
+                            align: "left",
+                        });
+
+                        doc.x = 175;
+                        doc.y = 120+ copia;
+                        doc.fillColor('black')
+                        doc.fontSize(8);
+                        doc.text("Cargo: " + liq.empleado.cargo, {
+                            align: "left",
+                        });
+
+                        doc.x = 175;
+                        doc.y = 135+ copia;
+                        doc.fillColor('black')
+                        doc.fontSize(8);
+                        doc.text("Horario: " + liq.empleado.horario, {
+                            align: "left",
+                        });
+
+                        doc.x = 325;
+                        doc.y = 105+ copia;
+                        doc.fillColor('black')
+                        doc.fontSize(8);
+                        doc.text("Banco: " + liq.empleado.banco, {
+                            align: "left",
+                        });
+
+                        doc.x = 325;
+                        doc.y = 120+ copia;
+                        doc.fillColor('black')
+                        doc.fontSize(8);
+                        doc.text("Sucursal Banco: " + liq.empleado.numSucursalBanco, {
+                            align: "left",
+                        });
+
+                        doc.x = 325;
+                        doc.y = 135+ copia;
+                        doc.fillColor('black')
+                        doc.fontSize(8);
+                        doc.text("Nº de cuenta: " + liq.empleado.numCuentaBanco, {
+                            align: "left",
+                        });
+
+                        var fechaIngreso = new Date(liq.empleado.fechaIngreso);
+                        doc.x = 450;
+                        doc.y = 112+ copia;
+                        doc.fillColor('black')
+                        doc.fontSize(8);
+                        doc.text("Fecha ingreso: " + (fechaIngreso.getDate() + "-" +  (fechaIngreso.getMonth()+1) + "-" + fechaIngreso.getFullYear()), {
+                            align: "left",
+                        });
+
+                        if(liq.empleado.fechaEgreso != null){
+                            var fechaEgreso = new Date(liq.empleado.fechaEgreso);
+                            doc.x = 450;
+                            doc.y = 127+ copia;
+                            doc.fillColor('black')
+                            doc.fontSize(8);
+                            doc.text("Fecha egreso: " + (fechaEgreso.getDate() + "-" + fechaEgreso.getMonth()+1) + "-" + fechaEgreso.getFullYear(), {
+                                align: "left",
+                            });
+                        }
+                        else{
+                            doc.x = 450;
+                            doc.y = 127+ copia;
+                            doc.fillColor('black')
+                            doc.fontSize(8);
+                            doc.text("Fecha egreso: ", {
+                                align: "left",
+                            });
+                        }
+
+                        doc.x = 45;
+                        doc.y = 152+ copia;
+                        doc.fillColor('black')
+                        doc.fontSize(11);
+                        doc.text("HABERES", {
+                            align: "left",
+                        });
+
+                        doc.x = 320;
+                        doc.y = 152+ copia;
+                        doc.fillColor('black')
+                        doc.fontSize(11);
+                        doc.text("DESCUENTOS", {
+                            align: "left",
+                        });
+
+                        var alturaHaberes = 170+ copia;
+                        doc.x = 25;
+                        doc.y = alturaHaberes;
+                        doc.fillColor('black')
+                        doc.fontSize(10);
+                        doc.text("Nombre", {
+                            align: "left",
+                        });
+
+                        doc.x = 160;
+                        doc.y = alturaHaberes;
+                        doc.fillColor('black')
+                        doc.fontSize(10);
+                        doc.text("Detalle", {
+                            align: "left",
+                        });
+
+                        doc.x = 230;
+                        doc.y = alturaHaberes;
+                        doc.fillColor('black')
+                        doc.fontSize(10);
+                        doc.text("Importe", {
+                            align: "left",
+                        });
+
+                        var alturaDescuentos = 170+ copia;
+                        doc.x = 290;
+                        doc.y = alturaDescuentos;
+                        doc.fillColor('black')
+                        doc.fontSize(10);
+                        doc.text("Nombre", {
+                            align: "left",
+                        });
+
+                        doc.x = 425;
+                        doc.y = alturaDescuentos;
+                        doc.fillColor('black')
+                        doc.fontSize(10);
+                        doc.text("Detalle", {
+                            align: "left",
+                        });
+
+                        doc.x = 500;
+                        doc.y = alturaDescuentos;
+                        doc.fillColor('black')
+                        doc.fontSize(10);
+                        doc.text("Importe", {
+                            align: "left",
+                        });
+
+                        if(liq.nombre == "Sueldo"){
+                            alturaHaberes = alturaHaberes + 12;
+                            doc.x = 25;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text("Sueldo", {
+                                align: "left",
+                            });
+                    
+                            doc.x = 160;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text("", {
+                                align: "center",
+                                width: 25,
+                            });
+                    
+                            doc.x = 220;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text(liq.sueldo, {
+                                align: "right",
+                                width: 45,
+                            });
+                            
+                            if(liq.cantidadFaltas != null){
+                                if(liq.cantidadFaltas != 0){
+                                    alturaHaberes = alturaHaberes + 12;
+                                    doc.x = 25;
+                                    doc.y = alturaHaberes;
+                                    doc.fillColor('black')
+                                    doc.fontSize(9);
+                                    doc.text("Faltas", {
+                                        align: "left",
+                                    });
+                            
+                                    doc.x = 160;
+                                    doc.y = alturaHaberes;
+                                    doc.fillColor('black')
+                                    doc.fontSize(9);
+                                    doc.text(liq.cantidadFaltas, {
+                                        align: "center",
+                                        width: 25,
+                                    });
+                            
+                                    doc.x = 220;
+                                    doc.y = alturaHaberes;
+                                    doc.fillColor('black')
+                                    doc.fontSize(9);
+                                    doc.text("- " + liq.descuentoFaltas, {
+                                        align: "right",
+                                        width: 45,
+                                    });
+                                }
+                            }
+                            
+                            if(liq.cantidadHorasExtra != null){
+                                if(liq.cantidadHorasExtra != 0){
+                                    alturaHaberes = alturaHaberes + 12;
+                                    doc.x = 25;
+                                    doc.y = alturaHaberes;
+                                    doc.fillColor('black')
+                                    doc.fontSize(9);
+                                    doc.text("Horas Extra", {
+                                        align: "left",
+                                    });
+                            
+                                    doc.x = 160;
+                                    doc.y = alturaHaberes;
+                                    doc.fillColor('black')
+                                    doc.fontSize(9);
+                                    doc.text(liq.cantidadHorasExtra, {
+                                        align: "center",
+                                        width: 25,
+                                    });
+                            
+                                    doc.x = 220;
+                                    doc.y = alturaHaberes;
+                                    doc.fillColor('black')
+                                    doc.fontSize(9);
+                                    doc.text(liq.montoHorasExtra, {
+                                        align: "right",
+                                        width: 45,
+                                    });
+                                }
+                            }
+                            
+                            if(liq.montoFictoPropina != null){
+                                if(liq.montoFictoPropina != 0){
+                                    alturaHaberes = alturaHaberes + 12;
+                                    doc.x = 25;
+                                    doc.y = alturaHaberes;
+                                    doc.fillColor('black')
+                                    doc.fontSize(9);
+                                    doc.text("Ficto Propina", {
+                                        align: "left",
+                                    });
+                            
+                                    doc.x = 160;
+                                    doc.y = alturaHaberes;
+                                    doc.fillColor('black')
+                                    doc.fontSize(9);
+                                    doc.text("", {
+                                        align: "center",
+                                        width: 25,
+                                    });
+                            
+                                    doc.x = 220;
+                                    doc.y = alturaHaberes;
+                                    doc.fillColor('black')
+                                    doc.fontSize(9);
+                                    doc.text(liq.montoFictoPropina, {
+                                        align: "right",
+                                        width: 45,
+                                    });
+                                }
+                            }
+                            
+                            if(liq.montoDescansoTrabajado != null && liq.montoDescansoTrabajado != 0){
+                                alturaHaberes = alturaHaberes + 12;
+                                doc.x = 25;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Descanso Trabajado", {
+                                    align: "left",
+                                });
+                        
+                                doc.x = 160;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("1", {
+                                    align: "center",
+                                    width: 25,
+                                });
+                        
+                                doc.x = 220;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("1000", {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.montoFeriadoPago != null && liq.montoFeriadoPago != 0){
+                                alturaHaberes = alturaHaberes + 12;
+                                doc.x = 25;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Feriado Pago", {
+                                    align: "left",
+                                });
+                        
+                                doc.x = 160;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.cantidadFeriadoPago, {
+                                    align: "center",
+                                    width: 25,
+                                });
+                        
+                                doc.x = 220;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.montoFeriadoPago, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.montoPrimaPorAntiguedad != null && liq.montoPrimaPorAntiguedad != 0){
+                                alturaHaberes = alturaHaberes + 12;
+                                doc.x = 25;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Prima por Antigüedad", {
+                                    align: "left",
+                                });
+                        
+                                doc.x = 160;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("", {
+                                    align: "center",
+                                    width: 25,
+                                });
+                        
+                                doc.x = 220;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.montoPrimaPorAntiguedad, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.montoPrimaPorProductividad != null && liq.montoPrimaPorProductividad != 0){
+                                alturaHaberes = alturaHaberes + 12;
+                                doc.x = 25;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Prima por Productividad", {
+                                    align: "left",
+                                });
+                        
+                                doc.x = 160;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("", {
+                                    align: "center",
+                                    width: 25,
+                                });
+                        
+                                doc.x = 220;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(lqi.montoPrimaPorProductividad, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }   
+
+                            if(liq.descuentoAporteJubilatorio != null && liq.descuentoAporteJubilatorio != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Aporte Jubilatorio", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.valorAporteJubilatorio + "%", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.descuentoAporteJubilatorio, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.descuentoFRL != null && liq.descuentoFRL != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("FRL", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.valorFRL + "%", {
+                                    align: "center",
+                                    width: 35,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.descuentoFRL, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.descuentoSeguroPorEnfermedad != null && liq.descuentoSeguroPorEnfermedad != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Seguro por Enfermedad", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.valorSeguroPorEnfermedad + "%", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.descuentoSeguroPorEnfermedad, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.valorAdicionalSNIS != null && liq.valorAdicionalSNIS != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Adicional SNIS", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.valorAdicionalSNIS + "%", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.descuentoSNIS, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.irpf != null){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("IRPF", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.irpf, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.montoAdelantos != null && liq.montoAdelantos != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Adelantos", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.montoAdelantos, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.montoRetenciones != null && liq.montoRetenciones != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Retenciones", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.montoRetenciones, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                        }
+
+                        if(liq.nombre == "Aguinaldo"){
+                            alturaHaberes = alturaHaberes + 12;
+                            doc.x = 25;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text("Aguinaldo", {
+                                align: "left",
+                            });
+                    
+                            doc.x = 160;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text("", {
+                                align: "center",
+                                width: 25,
+                            });
+                    
+                            doc.x = 220;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text(liq.totalHaberesGravados, {
+                                align: "right",
+                                width: 45,
+                            });
+
+                            if(liq.descuentoAporteJubilatorio != null && liq.descuentoAporteJubilatorio != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Aporte Jubilatorio", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.valorAporteJubilatorio + "%", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.descuentoAporteJubilatorio, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.descuentoFRL != null && liq.descuentoFRL != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("FRL", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.valorFRL + "%", {
+                                    align: "center",
+                                    width: 35,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.descuentoFRL, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.descuentoSeguroPorEnfermedad != null && liq.descuentoSeguroPorEnfermedad != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Seguro por Enfermedad", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.valorSeguroPorEnfermedad + "%", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.descuentoSeguroPorEnfermedad, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.valorAdicionalSNIS != null && liq.valorAdicionalSNIS != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Adicional SNIS", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.valorAdicionalSNIS + "%", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.descuentoSNIS, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.montoAdelantos != null && liq.montoAdelantos != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Adelantos", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.montoAdelantos, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.montoRetenciones != null && liq.montoRetenciones != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Retenciones", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.montoRetenciones, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                        }
+
+                        if(liq.nombre == "Salario Vacacional"){
+                            alturaHaberes = alturaHaberes + 12;
+                            doc.x = 25;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text("Salario Vacacional", {
+                                align: "left",
+                            });
+                    
+                            doc.x = 160;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text(liq.diasGozarSV + " x " + liq.montoDiaSV, {
+                                align: "center",
+                                width: 60,
+                            });
+                    
+                            doc.x = 220;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text(liq.totalHaberes, {
+                                align: "right",
+                                width: 45,
+                            });
+                            
+                            if(liq.montoAdelantos != null && liq.montoAdelantos != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Adelantos", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.montoAdelantos, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.montoRetenciones != null && liq.montoRetenciones != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Retenciones", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.montoRetenciones, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                        }
+
+                        if(liq.nombre == "Egreso"){
+                            alturaHaberes = alturaHaberes + 12;
+                            doc.x = 25;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text("Licencia no gozada", {
+                                align: "left",
+                            });
+                    
+                            doc.x = 160;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text("", {
+                                align: "center",
+                                width: 25,
+                            });
+                    
+                            doc.x = 220;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text(liq.egresoLicenciaNoGozada, {
+                                align: "right",
+                                width: 45,
+                            });
+                            
+                           
+                            alturaHaberes = alturaHaberes + 12;
+                            doc.x = 25;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text("Sal. Vac. por egreso", {
+                                align: "left",
+                            });
+                    
+                            doc.x = 160;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text("", {
+                                align: "center",
+                                width: 25,
+                            });
+                    
+                            doc.x = 220;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text(liq.egresoSV, {
+                                align: "right",
+                                width: 45,
+                            });
+
+                            
+                            alturaHaberes = alturaHaberes + 12;
+                            doc.x = 25;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text("Aguinaldo", {
+                                align: "left",
+                            });
+                    
+                            doc.x = 160;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text("", {
+                                align: "center",
+                                width: 25,
+                            });
+                    
+                            doc.x = 220;
+                            doc.y = alturaHaberes;
+                            doc.fillColor('black')
+                            doc.fontSize(9);
+                            doc.text(liq.totalHaberesGravados, {
+                                align: "right",
+                                width: 45,
+                            });
+                            
+                            if(liq.egresoIPD != 0){
+                                alturaHaberes = alturaHaberes + 12;
+                                doc.x = 25;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Indemn. por despido", {
+                                    align: "left",
+                                });
+                        
+                                doc.x = 160;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("", {
+                                    align: "center",
+                                    width: 25,
+                                });
+                        
+                                doc.x = 220;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.egresoIPD, {
+                                    align: "right",
+                                    width: 45,
+                                });
+
+                                alturaHaberes = alturaHaberes + 12;
+                                doc.x = 25;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Alícuota IPD Aguinaldo", {
+                                    align: "left",
+                                });
+                        
+                                doc.x = 160;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("", {
+                                    align: "center",
+                                    width: 25,
+                                });
+                        
+                                doc.x = 220;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.egresoAlicuotaAguinaldo, {
+                                    align: "right",
+                                    width: 45,
+                                });
+
+                                alturaHaberes = alturaHaberes + 12;
+                                doc.x = 25;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Alícuota IPD Licencia ", {
+                                    align: "left",
+                                });
+                        
+                                doc.x = 160;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("", {
+                                    align: "center",
+                                    width: 25,
+                                });
+                        
+                                doc.x = 220;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.egresoAlicuotaLicencia, {
+                                    align: "right",
+                                    width: 45,
+                                });
+
+                                alturaHaberes = alturaHaberes + 12;
+                                doc.x = 25;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Alícuoua IPD SV", {
+                                    align: "left",
+                                });
+                        
+                                doc.x = 160;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("", {
+                                    align: "center",
+                                    width: 25,
+                                });
+                        
+                                doc.x = 220;
+                                doc.y = alturaHaberes;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.egresoAlicuotaSV, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.descuentoAporteJubilatorio != null && liq.descuentoAporteJubilatorio != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Aporte Jubilatorio", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.valorAporteJubilatorio + "%", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.descuentoAporteJubilatorio, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.descuentoFRL != null && liq.descuentoFRL != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("FRL", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.valorFRL + "%", {
+                                    align: "center",
+                                    width: 35,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.descuentoFRL, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.descuentoSeguroPorEnfermedad != null && liq.descuentoSeguroPorEnfermedad != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Seguro por Enfermedad", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.valorSeguroPorEnfermedad + "%", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.descuentoSeguroPorEnfermedad, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.valorAdicionalSNIS != null && liq.valorAdicionalSNIS != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Adicional SNIS", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.valorAdicionalSNIS + "%", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.descuentoSNIS, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.irpf != null){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("IRPF", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.irpf, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.montoAdelantos != null && liq.montoAdelantos != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Adelantos", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.montoAdelantos, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                            
+                            if(liq.montoRetenciones != null && liq.montoRetenciones != 0){
+                                alturaDescuentos = alturaDescuentos + 12;
+                                doc.x = 290;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("Retenciones", {
+                                    align: "left",
+                                });
+
+                                doc.x = 425;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text("", {
+                                    align: "center",
+                                    width: 25,
+                                });
+
+                                doc.x = 490;
+                                doc.y = alturaDescuentos;
+                                doc.fillColor('black')
+                                doc.fontSize(9);
+                                doc.text(liq.montoRetenciones, {
+                                    align: "right",
+                                    width: 45,
+                                });
+                            }
+                        }
+
+                        doc.x = 25;
+                        doc.y = 303 + copia;
+                        doc.fillColor('black')
+                        doc.fontSize(9);
+                        doc.text("Total Gravado: " + liq.totalHaberesGravados, {
+                            align: "left",
+                        });
+                        
+                        doc.x = 150;
+                        doc.y = 303+ copia;
+                        doc.fillColor('black')
+                        doc.fontSize(9);
+                        doc.text("Total de Haberes: " + liq.totalHaberes, {
+                            align: "left",
+                        });
+
+                        doc.x = 400;
+                        doc.y = 303+ copia;
+                        doc.fillColor('black')
+                        doc.fontSize(9);
+                        doc.text("Total de Descuentos: " + liq.totalDescuentos, {
+                            align: "right",
+                        });
+
+                        doc.x = 400;
+                        doc.y = 340+ copia;
+                        doc.font("Helvetica-Bold")
+                        doc.fillColor('black')
+                        doc.fontSize(11);
+                        doc.text("Líquido a Cobrar: " + liq.liquidoCobrar, {
+                            align: "right",
+                        });
+
+                        doc.x = 490;
+                        doc.y = 378+ copia;
+                        doc.font("Helvetica")
+                        doc.fillColor('black')
+                        doc.fontSize(7);
+                        doc.text("Firma", {
+                            align: "left",
+                        });
+                    });
+                    var fecha = new Date();
+                    var horas = fecha.getHours();
+                    var minutos = fecha.getMinutes();
+                    var segundos = fecha.getSeconds();
+                    doc.pipe(fs.createWriteStream("recibos/out-" + horas + "-" + minutos + "-" + segundos + ".pdf"));
+                    //doc.pipe(fs.createWriteStream(res));
+                    //res.send("out.pdf");
+                    doc.end();
+                }
+                else{
+                    console.log("Empresa en null");
+                }
+            }
+        }  
+    );
+    //doc.pipe(fs.createWriteStream('out.pdf'));
+    // doc.end();    
 };

@@ -12,6 +12,7 @@ var empleadoSchema = new Schema({
     seguroSalud: { type: Number, required: true },
     horario: { type: String },
     horasPorDia: { type: Number, required: true },
+    cargo: { type: String },
     banco: { type: String },
     numSucursalBanco: { type: String },
     numCuentaBanco: { type: String },

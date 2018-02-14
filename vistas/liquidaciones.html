@@ -2,19 +2,14 @@
     <div class="container">
         <nav class="navbar navbar-expand-sm bg-primary navbar-dark">
             <ul class="navbar-nav">
+                <li class="nav-item"><a class="nav-link" href='empleados'>Empleados</a></li> 
                 <li class="nav-item"><a class="nav-link" href='empresas'>Empresas</a></li>  
                 <li class="nav-item"><a class="nav-link" href='cerrarSesion'>Cerrar Sesión</a></li>           
             </ul>
         </nav>
     </div>
     <div class="row justify-content-md-center">
-        <nav class="navbar bg-primary navbar-dark">
-            <ul class="navbar-nav">
-                <li class="nav-item active"><a class="nav-link" href='liquidaciones'>Liquidaciones</a></li>  
-                <li class="nav-item active"><a class="nav-link" href='empleados'>Empleados</a></li>           
-            </ul>
-        </nav>
-        <div class="col-lg-10 col-xl-10 text-center">
+        <div class="text-center">
             <br>
             <br>
             <br>
@@ -22,19 +17,22 @@
             <br>
             <a class="btn btn-primary" href="liquidacionNueva">Crear nueva liquidación</a>
             <a class="btn btn-primary" href="empleadoNuevo">Ingresar empleado</a>
+            <a class="btn btn-outline-primary" ng-click="imprimirRecibos()">imprimir</a>
             <br>
             <table class="table table-striped">
                 <tr class="info">
                     <th>Fecha</th>
                     <th>CI Empleado</th>
                     <th>Tipo</th>
-                    <th>Liquidaciones</th>
+                    <th>Imprimir</th>
+                    <!-- <th>Liquidaciones</th> -->
                 </tr>
                 <tr ng-repeat="liquidacion in liquidaciones">
                     <td>{{ liquidacion.mes }}/{{ liquidacion.anio }}</td>
                     <td>{{ liquidacion.empleadoCi }}</td>
                     <td>{{ liquidacion.nombre }}</td>
-                    <td><a class="btn btn-outline-primary" ng-click="liquidacionesEmpresaDetalle(liquidacion._id)">Ver</a></td>
+                    <td><input type="checkbox" class="form-check-input" ng-model="liquidacion.imprimir"></td>
+                    <!-- <td><a class="btn btn-outline-primary" ng-click="liquidacionesEmpresaDetalle(liquidacion._id)">Ver</a></td> -->
                 </tr>
             </table>
             <br>

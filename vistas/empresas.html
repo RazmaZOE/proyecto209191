@@ -1,13 +1,14 @@
 <div class="container">
     <nav class="navbar navbar-expand-sm bg-primary navbar-dark">
         <ul class="navbar-nav">
+            <li class="nav-item"><a class="nav-link" href='empresaNueva'>Crear nueva Empresa</a></li>
             <li class="nav-item"><a class="nav-link" href='cerrarSesion'>Cerrar Sesión</a></li>           
         </ul>
     </nav>
 </div>
 <div class="container">
     <div class="row justify-content-md-center">
-        <div class="col-lg-10 col-xl-10 text-center">
+        <div class="text-center">
             <br>
             <br>
             <br>
@@ -22,7 +23,7 @@
                     <th>Editar</th>
                 </tr>
                 <tr ng-repeat="empresa in empresas">
-                    <td>{{ empresa.nombre }}</td>
+                    <td>{{ empresa.razonSocial }}</td>
                     <td>{{ empresa.numRut }}</td>
                     <td>{{ empresa.numBps }}</td>
                     <td><a class="btn btn-outline-primary" ng-click="liquidacionesEmpresa(empresa)">Ver</a></td>
