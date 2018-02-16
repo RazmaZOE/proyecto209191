@@ -1179,6 +1179,7 @@ appEmpresa.controller("controladorEmpresaLiquidacionNueva", function($scope, $ht
                 $scope.irpf.anio = $scope.anio;
                 $scope.irpf.empleadoId = $scope.empleadoSeleccionado._id;
                 $scope.irpf.nombreLiquidacion = $scope.nombre;
+                $scope.irpf.fechaIngresoEmpleado = $scope.empleadoSeleccionado.fechaIngreso;
     
                 if(!$scope.liquidacionEncontrada || ($scope.liquidacionEncontrada && $scope.fueEditado)){
                     //Si no fue encontrada o si fue econtrada y editada, entra
@@ -1317,6 +1318,7 @@ appEmpresa.controller("controladorEmpresaLiquidacionNueva", function($scope, $ht
                 $scope.irpf.anio = $scope.anio;
                 $scope.irpf.empleadoId = $scope.empleadoSeleccionado._id;
                 $scope.irpf.nombreLiquidacion = $scope.nombre;
+                $scope.irpf.fechaIngresoEmpleado = $scope.empleadoSeleccionado.fechaIngreso;
     
                 $http.post("/liquidaciones/calcularIrpf", $scope.irpf).then(respuestaOk, respuestaError);
     

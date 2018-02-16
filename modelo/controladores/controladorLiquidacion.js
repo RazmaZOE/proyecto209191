@@ -270,6 +270,11 @@ exports.calcularIrpf = function(req, res){
         var computableSVoAguinaldoDic = req.body.haberesIrpfVacacional;
         var deduccionesDic = req.body.descuentosIrpf;
         var montoDescuentoPorHijoAnual = 13 * bpc;
+        var fechaIngresoEmpleado = new Date(req.body.fechaIngresoEmpleado);
+        if(fechaIngresoEmpleado.getFullYear() == anio){
+            var mesesTrabajados = 12 - fechaIngresoEmpleado.getMonth(); //no le pongo +1 al mes porque quiero que si ingresó en mes 10 de 3 meses trabajados y no 2
+            montoDescuentoPorHijoAnual = montoDescuentoPorHijoAnual * mesesTrabajados / 12;
+        }
         var hijosMenoresAnual = req.body.hijosMenores * montoDescuentoPorHijoAnual;
         var fechaDesde = new Date(anio-1, mes-1);//Diciembre Año pasado (no lo va a incluir)
         var fechaHasta = new Date(anio, mes-1);
@@ -1198,11 +1203,13 @@ exports.imprimirRecibos = function(req, res){
 
                         if(liq.empleado.fechaEgreso != null){
                             var fechaEgreso = new Date(liq.empleado.fechaEgreso);
+                            var fechaEgresoMes = fechaEgreso.getMonth() + 1;
+                            console.log("fechaEgresoMes: " + fechaEgresoMes)
                             doc.x = 450;
                             doc.y = 127;
                             doc.fillColor('black')
                             doc.fontSize(8);
-                            doc.text("Fecha egreso: " + (fechaEgreso.getDate() + "-" + fechaEgreso.getMonth()+1) + "-" + fechaEgreso.getFullYear(), {
+                            doc.text("Fecha egreso: " + fechaEgreso.getDate() + "-" + fechaEgresoMes + "-" + fechaEgreso.getFullYear(), {
                                 align: "left",
                             });
                         }
@@ -2644,7 +2651,6 @@ exports.imprimirRecibos = function(req, res){
                             align: "left",
                         });
 
-                        var fechaIngreso = new Date(liq.empleado.fechaIngreso);
                         doc.x = 450;
                         doc.y = 112+ copia;
                         doc.fillColor('black')
@@ -2653,13 +2659,13 @@ exports.imprimirRecibos = function(req, res){
                             align: "left",
                         });
 
-                        if(liq.empleado.fechaEgreso != null){
-                            var fechaEgreso = new Date(liq.empleado.fechaEgreso);
+                        if(liq.empleado.fechaEgreso != null){;
+                            console.log("fechaEgresoMes: " + fechaEgresoMes)
                             doc.x = 450;
                             doc.y = 127+ copia;
                             doc.fillColor('black')
                             doc.fontSize(8);
-                            doc.text("Fecha egreso: " + (fechaEgreso.getDate() + "-" + fechaEgreso.getMonth()+1) + "-" + fechaEgreso.getFullYear(), {
+                            doc.text("Fecha egreso: " + fechaEgreso.getDate() + "-" + fechaEgresoMes + "-" + fechaEgreso.getFullYear(), {
                                 align: "left",
                             });
                         }
@@ -2689,9 +2695,9 @@ exports.imprimirRecibos = function(req, res){
                             align: "left",
                         });
 
-                        var alturaHaberes = 170+ copia;
+                        var alturaHaberesCopia = 170+ copia;
                         doc.x = 25;
-                        doc.y = alturaHaberes;
+                        doc.y = alturaHaberesCopia;
                         doc.fillColor('black')
                         doc.fontSize(10);
                         doc.text("Nombre", {
@@ -2699,7 +2705,7 @@ exports.imprimirRecibos = function(req, res){
                         });
 
                         doc.x = 160;
-                        doc.y = alturaHaberes;
+                        doc.y = alturaHaberesCopia;
                         doc.fillColor('black')
                         doc.fontSize(10);
                         doc.text("Detalle", {
@@ -2707,16 +2713,16 @@ exports.imprimirRecibos = function(req, res){
                         });
 
                         doc.x = 230;
-                        doc.y = alturaHaberes;
+                        doc.y = alturaHaberesCopia;
                         doc.fillColor('black')
                         doc.fontSize(10);
                         doc.text("Importe", {
                             align: "left",
                         });
 
-                        var alturaDescuentos = 170+ copia;
+                        var alturaDescuentosCopia = 170+ copia;
                         doc.x = 290;
-                        doc.y = alturaDescuentos;
+                        doc.y = alturaDescuentosCopia;
                         doc.fillColor('black')
                         doc.fontSize(10);
                         doc.text("Nombre", {
@@ -2724,7 +2730,7 @@ exports.imprimirRecibos = function(req, res){
                         });
 
                         doc.x = 425;
-                        doc.y = alturaDescuentos;
+                        doc.y = alturaDescuentosCopia;
                         doc.fillColor('black')
                         doc.fontSize(10);
                         doc.text("Detalle", {
@@ -2732,7 +2738,7 @@ exports.imprimirRecibos = function(req, res){
                         });
 
                         doc.x = 500;
-                        doc.y = alturaDescuentos;
+                        doc.y = alturaDescuentosCopia;
                         doc.fillColor('black')
                         doc.fontSize(10);
                         doc.text("Importe", {
@@ -2740,9 +2746,9 @@ exports.imprimirRecibos = function(req, res){
                         });
 
                         if(liq.nombre == "Sueldo"){
-                            alturaHaberes = alturaHaberes + 12;
+                            alturaHaberesCopia = alturaHaberesCopia + 12;
                             doc.x = 25;
-                            doc.y = alturaHaberes;
+                            doc.y = alturaHaberesCopia;
                             doc.fillColor('black')
                             doc.fontSize(9);
                             doc.text("Sueldo", {
@@ -2750,7 +2756,7 @@ exports.imprimirRecibos = function(req, res){
                             });
                     
                             doc.x = 160;
-                            doc.y = alturaHaberes;
+                            doc.y = alturaHaberesCopia;
                             doc.fillColor('black')
                             doc.fontSize(9);
                             doc.text("", {
@@ -2759,7 +2765,7 @@ exports.imprimirRecibos = function(req, res){
                             });
                     
                             doc.x = 220;
-                            doc.y = alturaHaberes;
+                            doc.y = alturaHaberesCopia;
                             doc.fillColor('black')
                             doc.fontSize(9);
                             doc.text(liq.sueldo, {
@@ -2769,9 +2775,9 @@ exports.imprimirRecibos = function(req, res){
                             
                             if(liq.cantidadFaltas != null){
                                 if(liq.cantidadFaltas != 0){
-                                    alturaHaberes = alturaHaberes + 12;
+                                    alturaHaberesCopia = alturaHaberesCopia + 12;
                                     doc.x = 25;
-                                    doc.y = alturaHaberes;
+                                    doc.y = alturaHaberesCopia;
                                     doc.fillColor('black')
                                     doc.fontSize(9);
                                     doc.text("Faltas", {
@@ -2779,7 +2785,7 @@ exports.imprimirRecibos = function(req, res){
                                     });
                             
                                     doc.x = 160;
-                                    doc.y = alturaHaberes;
+                                    doc.y = alturaHaberesCopia;
                                     doc.fillColor('black')
                                     doc.fontSize(9);
                                     doc.text(liq.cantidadFaltas, {
@@ -2788,7 +2794,7 @@ exports.imprimirRecibos = function(req, res){
                                     });
                             
                                     doc.x = 220;
-                                    doc.y = alturaHaberes;
+                                    doc.y = alturaHaberesCopia;
                                     doc.fillColor('black')
                                     doc.fontSize(9);
                                     doc.text("- " + liq.descuentoFaltas, {
@@ -2800,9 +2806,9 @@ exports.imprimirRecibos = function(req, res){
                             
                             if(liq.cantidadHorasExtra != null){
                                 if(liq.cantidadHorasExtra != 0){
-                                    alturaHaberes = alturaHaberes + 12;
+                                    alturaHaberesCopia = alturaHaberesCopia + 12;
                                     doc.x = 25;
-                                    doc.y = alturaHaberes;
+                                    doc.y = alturaHaberesCopia;
                                     doc.fillColor('black')
                                     doc.fontSize(9);
                                     doc.text("Horas Extra", {
@@ -2810,7 +2816,7 @@ exports.imprimirRecibos = function(req, res){
                                     });
                             
                                     doc.x = 160;
-                                    doc.y = alturaHaberes;
+                                    doc.y = alturaHaberesCopia;
                                     doc.fillColor('black')
                                     doc.fontSize(9);
                                     doc.text(liq.cantidadHorasExtra, {
@@ -2819,7 +2825,7 @@ exports.imprimirRecibos = function(req, res){
                                     });
                             
                                     doc.x = 220;
-                                    doc.y = alturaHaberes;
+                                    doc.y = alturaHaberesCopia;
                                     doc.fillColor('black')
                                     doc.fontSize(9);
                                     doc.text(liq.montoHorasExtra, {
@@ -2831,9 +2837,9 @@ exports.imprimirRecibos = function(req, res){
                             
                             if(liq.montoFictoPropina != null){
                                 if(liq.montoFictoPropina != 0){
-                                    alturaHaberes = alturaHaberes + 12;
+                                    alturaHaberesCopia = alturaHaberesCopia + 12;
                                     doc.x = 25;
-                                    doc.y = alturaHaberes;
+                                    doc.y = alturaHaberesCopia;
                                     doc.fillColor('black')
                                     doc.fontSize(9);
                                     doc.text("Ficto Propina", {
@@ -2841,7 +2847,7 @@ exports.imprimirRecibos = function(req, res){
                                     });
                             
                                     doc.x = 160;
-                                    doc.y = alturaHaberes;
+                                    doc.y = alturaHaberesCopia;
                                     doc.fillColor('black')
                                     doc.fontSize(9);
                                     doc.text("", {
@@ -2850,7 +2856,7 @@ exports.imprimirRecibos = function(req, res){
                                     });
                             
                                     doc.x = 220;
-                                    doc.y = alturaHaberes;
+                                    doc.y = alturaHaberesCopia;
                                     doc.fillColor('black')
                                     doc.fontSize(9);
                                     doc.text(liq.montoFictoPropina, {
@@ -2861,9 +2867,9 @@ exports.imprimirRecibos = function(req, res){
                             }
                             
                             if(liq.montoDescansoTrabajado != null && liq.montoDescansoTrabajado != 0){
-                                alturaHaberes = alturaHaberes + 12;
+                                alturaHaberesCopia = alturaHaberesCopia + 12;
                                 doc.x = 25;
-                                doc.y = alturaHaberes;
+                                doc.y = alturaHaberesCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("Descanso Trabajado", {
@@ -2871,7 +2877,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
                         
                                 doc.x = 160;
-                                doc.y = alturaHaberes;
+                                doc.y = alturaHaberesCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("1", {
@@ -2880,7 +2886,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
                         
                                 doc.x = 220;
-                                doc.y = alturaHaberes;
+                                doc.y = alturaHaberesCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("1000", {
@@ -2890,9 +2896,9 @@ exports.imprimirRecibos = function(req, res){
                             }
                             
                             if(liq.montoFeriadoPago != null && liq.montoFeriadoPago != 0){
-                                alturaHaberes = alturaHaberes + 12;
+                                alturaHaberesCopia = alturaHaberesCopia + 12;
                                 doc.x = 25;
-                                doc.y = alturaHaberes;
+                                doc.y = alturaHaberesCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("Feriado Pago", {
@@ -2900,7 +2906,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
                         
                                 doc.x = 160;
-                                doc.y = alturaHaberes;
+                                doc.y = alturaHaberesCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.cantidadFeriadoPago, {
@@ -2909,7 +2915,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
                         
                                 doc.x = 220;
-                                doc.y = alturaHaberes;
+                                doc.y = alturaHaberesCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.montoFeriadoPago, {
@@ -2919,9 +2925,9 @@ exports.imprimirRecibos = function(req, res){
                             }
                             
                             if(liq.montoPrimaPorAntiguedad != null && liq.montoPrimaPorAntiguedad != 0){
-                                alturaHaberes = alturaHaberes + 12;
+                                alturaHaberesCopia = alturaHaberesCopia + 12;
                                 doc.x = 25;
-                                doc.y = alturaHaberes;
+                                doc.y = alturaHaberesCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("Prima por Antigüedad", {
@@ -2929,7 +2935,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
                         
                                 doc.x = 160;
-                                doc.y = alturaHaberes;
+                                doc.y = alturaHaberesCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("", {
@@ -2938,7 +2944,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
                         
                                 doc.x = 220;
-                                doc.y = alturaHaberes;
+                                doc.y = alturaHaberesCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.montoPrimaPorAntiguedad, {
@@ -2948,9 +2954,9 @@ exports.imprimirRecibos = function(req, res){
                             }
                             
                             if(liq.montoPrimaPorProductividad != null && liq.montoPrimaPorProductividad != 0){
-                                alturaHaberes = alturaHaberes + 12;
+                                alturaHaberesCopia = alturaHaberesCopia + 12;
                                 doc.x = 25;
-                                doc.y = alturaHaberes;
+                                doc.y = alturaHaberesCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("Prima por Productividad", {
@@ -2958,7 +2964,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
                         
                                 doc.x = 160;
-                                doc.y = alturaHaberes;
+                                doc.y = alturaHaberesCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("", {
@@ -2967,7 +2973,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
                         
                                 doc.x = 220;
-                                doc.y = alturaHaberes;
+                                doc.y = alturaHaberesCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(lqi.montoPrimaPorProductividad, {
@@ -2977,9 +2983,9 @@ exports.imprimirRecibos = function(req, res){
                             }   
 
                             if(liq.descuentoAporteJubilatorio != null && liq.descuentoAporteJubilatorio != 0){
-                                alturaDescuentos = alturaDescuentos + 12;
+                                alturaDescuentosCopia = alturaDescuentosCopia + 12;
                                 doc.x = 290;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("Aporte Jubilatorio", {
@@ -2987,7 +2993,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 425;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.valorAporteJubilatorio + "%", {
@@ -2996,7 +3002,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 490;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.descuentoAporteJubilatorio, {
@@ -3006,9 +3012,9 @@ exports.imprimirRecibos = function(req, res){
                             }
                             
                             if(liq.descuentoFRL != null && liq.descuentoFRL != 0){
-                                alturaDescuentos = alturaDescuentos + 12;
+                                alturaDescuentosCopia = alturaDescuentosCopia + 12;
                                 doc.x = 290;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("FRL", {
@@ -3016,7 +3022,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 425;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.valorFRL + "%", {
@@ -3025,7 +3031,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 490;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.descuentoFRL, {
@@ -3035,9 +3041,9 @@ exports.imprimirRecibos = function(req, res){
                             }
                             
                             if(liq.descuentoSeguroPorEnfermedad != null && liq.descuentoSeguroPorEnfermedad != 0){
-                                alturaDescuentos = alturaDescuentos + 12;
+                                alturaDescuentosCopia = alturaDescuentosCopia + 12;
                                 doc.x = 290;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("Seguro por Enfermedad", {
@@ -3045,7 +3051,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 425;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.valorSeguroPorEnfermedad + "%", {
@@ -3054,7 +3060,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 490;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.descuentoSeguroPorEnfermedad, {
@@ -3064,9 +3070,9 @@ exports.imprimirRecibos = function(req, res){
                             }
                             
                             if(liq.valorAdicionalSNIS != null && liq.valorAdicionalSNIS != 0){
-                                alturaDescuentos = alturaDescuentos + 12;
+                                alturaDescuentosCopia = alturaDescuentosCopia + 12;
                                 doc.x = 290;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("Adicional SNIS", {
@@ -3074,7 +3080,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 425;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.valorAdicionalSNIS + "%", {
@@ -3083,7 +3089,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 490;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.descuentoSNIS, {
@@ -3093,9 +3099,9 @@ exports.imprimirRecibos = function(req, res){
                             }
                             
                             if(liq.irpf != null){
-                                alturaDescuentos = alturaDescuentos + 12;
+                                alturaDescuentosCopia = alturaDescuentosCopia + 12;
                                 doc.x = 290;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("IRPF", {
@@ -3103,7 +3109,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 425;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("", {
@@ -3112,7 +3118,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 490;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.irpf, {
@@ -3122,9 +3128,9 @@ exports.imprimirRecibos = function(req, res){
                             }
                             
                             if(liq.montoAdelantos != null && liq.montoAdelantos != 0){
-                                alturaDescuentos = alturaDescuentos + 12;
+                                alturaDescuentosCopia = alturaDescuentosCopia + 12;
                                 doc.x = 290;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("Adelantos", {
@@ -3132,7 +3138,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 425;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("", {
@@ -3141,7 +3147,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 490;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.montoAdelantos, {
@@ -3151,9 +3157,9 @@ exports.imprimirRecibos = function(req, res){
                             }
                             
                             if(liq.montoRetenciones != null && liq.montoRetenciones != 0){
-                                alturaDescuentos = alturaDescuentos + 12;
+                                alturaDescuentosCopia = alturaDescuentosCopia + 12;
                                 doc.x = 290;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("Retenciones", {
@@ -3161,7 +3167,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 425;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("", {
@@ -3170,7 +3176,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 490;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.montoRetenciones, {
@@ -3181,9 +3187,9 @@ exports.imprimirRecibos = function(req, res){
                         }
 
                         if(liq.nombre == "Aguinaldo"){
-                            alturaHaberes = alturaHaberes + 12;
+                            alturaHaberesCopia = alturaHaberesCopia + 12;
                             doc.x = 25;
-                            doc.y = alturaHaberes;
+                            doc.y = alturaHaberesCopia;
                             doc.fillColor('black')
                             doc.fontSize(9);
                             doc.text("Aguinaldo", {
@@ -3191,7 +3197,7 @@ exports.imprimirRecibos = function(req, res){
                             });
                     
                             doc.x = 160;
-                            doc.y = alturaHaberes;
+                            doc.y = alturaHaberesCopia;
                             doc.fillColor('black')
                             doc.fontSize(9);
                             doc.text("", {
@@ -3200,7 +3206,7 @@ exports.imprimirRecibos = function(req, res){
                             });
                     
                             doc.x = 220;
-                            doc.y = alturaHaberes;
+                            doc.y = alturaHaberesCopia;
                             doc.fillColor('black')
                             doc.fontSize(9);
                             doc.text(liq.totalHaberesGravados, {
@@ -3209,9 +3215,9 @@ exports.imprimirRecibos = function(req, res){
                             });
 
                             if(liq.descuentoAporteJubilatorio != null && liq.descuentoAporteJubilatorio != 0){
-                                alturaDescuentos = alturaDescuentos + 12;
+                                alturaDescuentosCopia = alturaDescuentosCopia + 12;
                                 doc.x = 290;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("Aporte Jubilatorio", {
@@ -3219,7 +3225,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 425;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.valorAporteJubilatorio + "%", {
@@ -3228,7 +3234,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 490;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.descuentoAporteJubilatorio, {
@@ -3238,9 +3244,9 @@ exports.imprimirRecibos = function(req, res){
                             }
                             
                             if(liq.descuentoFRL != null && liq.descuentoFRL != 0){
-                                alturaDescuentos = alturaDescuentos + 12;
+                                alturaDescuentosCopia = alturaDescuentosCopia + 12;
                                 doc.x = 290;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("FRL", {
@@ -3248,7 +3254,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 425;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.valorFRL + "%", {
@@ -3257,7 +3263,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 490;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.descuentoFRL, {
@@ -3267,9 +3273,9 @@ exports.imprimirRecibos = function(req, res){
                             }
                             
                             if(liq.descuentoSeguroPorEnfermedad != null && liq.descuentoSeguroPorEnfermedad != 0){
-                                alturaDescuentos = alturaDescuentos + 12;
+                                alturaDescuentosCopia = alturaDescuentosCopia + 12;
                                 doc.x = 290;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("Seguro por Enfermedad", {
@@ -3277,7 +3283,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 425;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.valorSeguroPorEnfermedad + "%", {
@@ -3286,7 +3292,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 490;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.descuentoSeguroPorEnfermedad, {
@@ -3296,9 +3302,9 @@ exports.imprimirRecibos = function(req, res){
                             }
                             
                             if(liq.valorAdicionalSNIS != null && liq.valorAdicionalSNIS != 0){
-                                alturaDescuentos = alturaDescuentos + 12;
+                                alturaDescuentosCopia = alturaDescuentosCopia + 12;
                                 doc.x = 290;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("Adicional SNIS", {
@@ -3306,7 +3312,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 425;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.valorAdicionalSNIS + "%", {
@@ -3315,7 +3321,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 490;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.descuentoSNIS, {
@@ -3325,9 +3331,9 @@ exports.imprimirRecibos = function(req, res){
                             }
                             
                             if(liq.montoAdelantos != null && liq.montoAdelantos != 0){
-                                alturaDescuentos = alturaDescuentos + 12;
+                                alturaDescuentosCopia = alturaDescuentosCopia + 12;
                                 doc.x = 290;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("Adelantos", {
@@ -3335,7 +3341,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 425;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("", {
@@ -3344,7 +3350,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 490;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.montoAdelantos, {
@@ -3354,9 +3360,9 @@ exports.imprimirRecibos = function(req, res){
                             }
                             
                             if(liq.montoRetenciones != null && liq.montoRetenciones != 0){
-                                alturaDescuentos = alturaDescuentos + 12;
+                                alturaDescuentosCopia = alturaDescuentosCopia + 12;
                                 doc.x = 290;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("Retenciones", {
@@ -3364,7 +3370,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 425;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("", {
@@ -3373,7 +3379,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 490;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.montoRetenciones, {
@@ -3384,9 +3390,9 @@ exports.imprimirRecibos = function(req, res){
                         }
 
                         if(liq.nombre == "Salario Vacacional"){
-                            alturaHaberes = alturaHaberes + 12;
+                            alturaHaberesCopia = alturaHaberesCopia + 12;
                             doc.x = 25;
-                            doc.y = alturaHaberes;
+                            doc.y = alturaHaberesCopia;
                             doc.fillColor('black')
                             doc.fontSize(9);
                             doc.text("Salario Vacacional", {
@@ -3394,7 +3400,7 @@ exports.imprimirRecibos = function(req, res){
                             });
                     
                             doc.x = 160;
-                            doc.y = alturaHaberes;
+                            doc.y = alturaHaberesCopia;
                             doc.fillColor('black')
                             doc.fontSize(9);
                             doc.text(liq.diasGozarSV + " x " + liq.montoDiaSV, {
@@ -3403,7 +3409,7 @@ exports.imprimirRecibos = function(req, res){
                             });
                     
                             doc.x = 220;
-                            doc.y = alturaHaberes;
+                            doc.y = alturaHaberesCopia;
                             doc.fillColor('black')
                             doc.fontSize(9);
                             doc.text(liq.totalHaberes, {
@@ -3412,9 +3418,9 @@ exports.imprimirRecibos = function(req, res){
                             });
                             
                             if(liq.montoAdelantos != null && liq.montoAdelantos != 0){
-                                alturaDescuentos = alturaDescuentos + 12;
+                                alturaDescuentosCopia = alturaDescuentosCopia + 12;
                                 doc.x = 290;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("Adelantos", {
@@ -3422,7 +3428,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 425;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("", {
@@ -3431,7 +3437,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 490;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.montoAdelantos, {
@@ -3441,9 +3447,9 @@ exports.imprimirRecibos = function(req, res){
                             }
                             
                             if(liq.montoRetenciones != null && liq.montoRetenciones != 0){
-                                alturaDescuentos = alturaDescuentos + 12;
+                                alturaDescuentosCopia = alturaDescuentosCopia + 12;
                                 doc.x = 290;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("Retenciones", {
@@ -3451,7 +3457,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 425;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("", {
@@ -3460,7 +3466,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 490;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.montoRetenciones, {
@@ -3471,9 +3477,9 @@ exports.imprimirRecibos = function(req, res){
                         }
 
                         if(liq.nombre == "Egreso"){
-                            alturaHaberes = alturaHaberes + 12;
+                            alturaHaberesCopia = alturaHaberesCopia + 12;
                             doc.x = 25;
-                            doc.y = alturaHaberes;
+                            doc.y = alturaHaberesCopia;
                             doc.fillColor('black')
                             doc.fontSize(9);
                             doc.text("Licencia no gozada", {
@@ -3481,7 +3487,7 @@ exports.imprimirRecibos = function(req, res){
                             });
                     
                             doc.x = 160;
-                            doc.y = alturaHaberes;
+                            doc.y = alturaHaberesCopia;
                             doc.fillColor('black')
                             doc.fontSize(9);
                             doc.text("", {
@@ -3490,7 +3496,7 @@ exports.imprimirRecibos = function(req, res){
                             });
                     
                             doc.x = 220;
-                            doc.y = alturaHaberes;
+                            doc.y = alturaHaberesCopia;
                             doc.fillColor('black')
                             doc.fontSize(9);
                             doc.text(liq.egresoLicenciaNoGozada, {
@@ -3499,9 +3505,9 @@ exports.imprimirRecibos = function(req, res){
                             });
                             
                            
-                            alturaHaberes = alturaHaberes + 12;
+                            alturaHaberesCopia = alturaHaberesCopia + 12;
                             doc.x = 25;
-                            doc.y = alturaHaberes;
+                            doc.y = alturaHaberesCopia;
                             doc.fillColor('black')
                             doc.fontSize(9);
                             doc.text("Sal. Vac. por egreso", {
@@ -3509,7 +3515,7 @@ exports.imprimirRecibos = function(req, res){
                             });
                     
                             doc.x = 160;
-                            doc.y = alturaHaberes;
+                            doc.y = alturaHaberesCopia;
                             doc.fillColor('black')
                             doc.fontSize(9);
                             doc.text("", {
@@ -3518,7 +3524,7 @@ exports.imprimirRecibos = function(req, res){
                             });
                     
                             doc.x = 220;
-                            doc.y = alturaHaberes;
+                            doc.y = alturaHaberesCopia;
                             doc.fillColor('black')
                             doc.fontSize(9);
                             doc.text(liq.egresoSV, {
@@ -3527,9 +3533,9 @@ exports.imprimirRecibos = function(req, res){
                             });
 
                             
-                            alturaHaberes = alturaHaberes + 12;
+                            alturaHaberesCopia = alturaHaberesCopia + 12;
                             doc.x = 25;
-                            doc.y = alturaHaberes;
+                            doc.y = alturaHaberesCopia;
                             doc.fillColor('black')
                             doc.fontSize(9);
                             doc.text("Aguinaldo", {
@@ -3537,7 +3543,7 @@ exports.imprimirRecibos = function(req, res){
                             });
                     
                             doc.x = 160;
-                            doc.y = alturaHaberes;
+                            doc.y = alturaHaberesCopia;
                             doc.fillColor('black')
                             doc.fontSize(9);
                             doc.text("", {
@@ -3546,7 +3552,7 @@ exports.imprimirRecibos = function(req, res){
                             });
                     
                             doc.x = 220;
-                            doc.y = alturaHaberes;
+                            doc.y = alturaHaberesCopia;
                             doc.fillColor('black')
                             doc.fontSize(9);
                             doc.text(liq.totalHaberesGravados, {
@@ -3555,9 +3561,9 @@ exports.imprimirRecibos = function(req, res){
                             });
                             
                             if(liq.egresoIPD != 0){
-                                alturaHaberes = alturaHaberes + 12;
+                                alturaHaberesCopia = alturaHaberesCopia + 12;
                                 doc.x = 25;
-                                doc.y = alturaHaberes;
+                                doc.y = alturaHaberesCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("Indemn. por despido", {
@@ -3565,7 +3571,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
                         
                                 doc.x = 160;
-                                doc.y = alturaHaberes;
+                                doc.y = alturaHaberesCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("", {
@@ -3574,7 +3580,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
                         
                                 doc.x = 220;
-                                doc.y = alturaHaberes;
+                                doc.y = alturaHaberesCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.egresoIPD, {
@@ -3582,9 +3588,9 @@ exports.imprimirRecibos = function(req, res){
                                     width: 45,
                                 });
 
-                                alturaHaberes = alturaHaberes + 12;
+                                alturaHaberesCopia = alturaHaberesCopia + 12;
                                 doc.x = 25;
-                                doc.y = alturaHaberes;
+                                doc.y = alturaHaberesCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("Alícuota IPD Aguinaldo", {
@@ -3592,7 +3598,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
                         
                                 doc.x = 160;
-                                doc.y = alturaHaberes;
+                                doc.y = alturaHaberesCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("", {
@@ -3601,7 +3607,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
                         
                                 doc.x = 220;
-                                doc.y = alturaHaberes;
+                                doc.y = alturaHaberesCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.egresoAlicuotaAguinaldo, {
@@ -3609,9 +3615,9 @@ exports.imprimirRecibos = function(req, res){
                                     width: 45,
                                 });
 
-                                alturaHaberes = alturaHaberes + 12;
+                                alturaHaberesCopia = alturaHaberesCopia + 12;
                                 doc.x = 25;
-                                doc.y = alturaHaberes;
+                                doc.y = alturaHaberesCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("Alícuota IPD Licencia ", {
@@ -3619,7 +3625,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
                         
                                 doc.x = 160;
-                                doc.y = alturaHaberes;
+                                doc.y = alturaHaberesCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("", {
@@ -3628,7 +3634,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
                         
                                 doc.x = 220;
-                                doc.y = alturaHaberes;
+                                doc.y = alturaHaberesCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.egresoAlicuotaLicencia, {
@@ -3636,9 +3642,9 @@ exports.imprimirRecibos = function(req, res){
                                     width: 45,
                                 });
 
-                                alturaHaberes = alturaHaberes + 12;
+                                alturaHaberesCopia = alturaHaberesCopia + 12;
                                 doc.x = 25;
-                                doc.y = alturaHaberes;
+                                doc.y = alturaHaberesCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("Alícuoua IPD SV", {
@@ -3646,7 +3652,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
                         
                                 doc.x = 160;
-                                doc.y = alturaHaberes;
+                                doc.y = alturaHaberesCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("", {
@@ -3655,7 +3661,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
                         
                                 doc.x = 220;
-                                doc.y = alturaHaberes;
+                                doc.y = alturaHaberesCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.egresoAlicuotaSV, {
@@ -3665,9 +3671,9 @@ exports.imprimirRecibos = function(req, res){
                             }
                             
                             if(liq.descuentoAporteJubilatorio != null && liq.descuentoAporteJubilatorio != 0){
-                                alturaDescuentos = alturaDescuentos + 12;
+                                alturaDescuentosCopia = alturaDescuentosCopia + 12;
                                 doc.x = 290;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("Aporte Jubilatorio", {
@@ -3675,7 +3681,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 425;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.valorAporteJubilatorio + "%", {
@@ -3684,7 +3690,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 490;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.descuentoAporteJubilatorio, {
@@ -3694,9 +3700,9 @@ exports.imprimirRecibos = function(req, res){
                             }
                             
                             if(liq.descuentoFRL != null && liq.descuentoFRL != 0){
-                                alturaDescuentos = alturaDescuentos + 12;
+                                alturaDescuentosCopia = alturaDescuentosCopia + 12;
                                 doc.x = 290;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("FRL", {
@@ -3704,7 +3710,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 425;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.valorFRL + "%", {
@@ -3713,7 +3719,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 490;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.descuentoFRL, {
@@ -3723,9 +3729,9 @@ exports.imprimirRecibos = function(req, res){
                             }
                             
                             if(liq.descuentoSeguroPorEnfermedad != null && liq.descuentoSeguroPorEnfermedad != 0){
-                                alturaDescuentos = alturaDescuentos + 12;
+                                alturaDescuentosCopia = alturaDescuentosCopia + 12;
                                 doc.x = 290;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("Seguro por Enfermedad", {
@@ -3733,7 +3739,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 425;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.valorSeguroPorEnfermedad + "%", {
@@ -3742,7 +3748,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 490;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.descuentoSeguroPorEnfermedad, {
@@ -3752,9 +3758,9 @@ exports.imprimirRecibos = function(req, res){
                             }
                             
                             if(liq.valorAdicionalSNIS != null && liq.valorAdicionalSNIS != 0){
-                                alturaDescuentos = alturaDescuentos + 12;
+                                alturaDescuentosCopia = alturaDescuentosCopia + 12;
                                 doc.x = 290;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("Adicional SNIS", {
@@ -3762,7 +3768,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 425;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.valorAdicionalSNIS + "%", {
@@ -3771,7 +3777,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 490;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.descuentoSNIS, {
@@ -3781,9 +3787,9 @@ exports.imprimirRecibos = function(req, res){
                             }
                             
                             if(liq.irpf != null){
-                                alturaDescuentos = alturaDescuentos + 12;
+                                alturaDescuentosCopia = alturaDescuentosCopia + 12;
                                 doc.x = 290;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("IRPF", {
@@ -3791,7 +3797,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 425;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("", {
@@ -3800,7 +3806,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 490;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.irpf, {
@@ -3810,9 +3816,9 @@ exports.imprimirRecibos = function(req, res){
                             }
                             
                             if(liq.montoAdelantos != null && liq.montoAdelantos != 0){
-                                alturaDescuentos = alturaDescuentos + 12;
+                                alturaDescuentosCopia = alturaDescuentosCopia + 12;
                                 doc.x = 290;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("Adelantos", {
@@ -3820,7 +3826,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 425;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("", {
@@ -3829,7 +3835,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 490;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.montoAdelantos, {
@@ -3839,9 +3845,9 @@ exports.imprimirRecibos = function(req, res){
                             }
                             
                             if(liq.montoRetenciones != null && liq.montoRetenciones != 0){
-                                alturaDescuentos = alturaDescuentos + 12;
+                                alturaDescuentosCopia = alturaDescuentosCopia + 12;
                                 doc.x = 290;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("Retenciones", {
@@ -3849,7 +3855,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 425;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text("", {
@@ -3858,7 +3864,7 @@ exports.imprimirRecibos = function(req, res){
                                 });
 
                                 doc.x = 490;
-                                doc.y = alturaDescuentos;
+                                doc.y = alturaDescuentosCopia;
                                 doc.fillColor('black')
                                 doc.fontSize(9);
                                 doc.text(liq.montoRetenciones, {
