@@ -686,7 +686,8 @@ appEmpresa.controller("controladorEmpresaLiquidacionNueva", function($scope, $ht
             //$scope.sueldo = empleado.sueldo;
             $scope.liquidacion = {};
             $scope.liquidacion.sueldo = empleado.sueldo;
-            $scope.liquidacion.esJornalero = $scope.empleadoSeleccionado.esJornalero;
+            // $scope.liquidacion.esJornalero = $scope.empleadoSeleccionado.esJornalero;
+            $scope.liquidacion.esJornalero = false;
             $scope.liquidacion.faltas = "";
             $scope.liquidacion.horasExtra ="";
             $scope.mensaje = "";
@@ -897,7 +898,8 @@ appEmpresa.controller("controladorEmpresaLiquidacionNueva", function($scope, $ht
                 //$scope.sueldo = empleado.sueldo;
                 $scope.liquidacion = {};
                 $scope.liquidacion.sueldo = $scope.empleadoSeleccionado.sueldo;
-                $scope.liquidacion.esJornalero = $scope.empleadoSeleccionado.esJornalero;
+                // $scope.liquidacion.esJornalero = $scope.empleadoSeleccionado.esJornalero;
+                $scope.liquidacion.esJornalero = false;
                 $scope.liquidacion.faltas = "";
                 $scope.liquidacion.horasExtra ="";
                 $scope.mensaje = "";
@@ -1139,7 +1141,7 @@ appEmpresa.controller("controladorEmpresaLiquidacionNueva", function($scope, $ht
             }
             console.log($scope.empleadoSeleccionado.montoHorasExtra);
             console.log($scope.empleadoSeleccionado.descuentoFaltas);
-            var sueldoJornalero = $scope.liquidacion.sueldoJornalero;
+            //var sueldoJornalero = $scope.liquidacion.sueldoJornalero;
             var sueldo = $scope.liquidacion.sueldo;
             var montoHorasExtra = $scope.empleadoSeleccionado.montoHorasExtra;
             var descuentoFaltas = $scope.empleadoSeleccionado.descuentoFaltas;
