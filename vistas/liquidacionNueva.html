@@ -17,11 +17,11 @@
                 <br>
                 <div class="form-group row text-center">
                     <label class=" col-sm-2 "><h3>Fecha: </h3></label>
-                    <div class="col-sm-2">
+                    <div class="col-sm-3">
                         <input type="number" min="1" max="12" class="form-control" ng-model="mes" ng-change="haySelected()" placeholder="Ej: 6" required>
                     </div>
                     <div class="col-sm-3">
-                        <input type="number" min="1900" class="form-control" ng-model="anio" ng-change="haySelected()" placeholder="Ej: 2018" required>
+                        <input type="number" min="1" class="form-control" ng-model="anio" ng-change="haySelected()" placeholder="Ej: 2018" required>
                     </div>
                 </div>
                 <div class="btn-group" data-toggle="buttons">
@@ -268,6 +268,18 @@
                                     <input type="number" step=".01" class="form-control form-control-sm" ng-model="egreso.alicuotaSV" placeholder="Alícuota Salario Vacacional" readonly>
                                 </div>
                             </div>
+                            <div class="form-group row">
+                                <label class="card-text col-sm-4 col-for-label text-success">Total Haberes: </label>
+                                <div class="col-sm-8">
+                                    <input type="number" step=".01" class="form-control form-control-sm" ng-model="haberes" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="card-text col-sm-4 col-for-label text-success">Total Haberes Gravados: </label>
+                                <div class="col-sm-8">
+                                    <input type="number" step=".01" class="form-control form-control-sm" ng-model="haberesGravados" readonly>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <br>
@@ -333,7 +345,7 @@
                         </div>
                     </div>
                     <button type="submit" class="btn btn-primary" ng-click="crearLiquidacion()" ng-disabled="formLiquidacionNueva.$invalid || !selected || errorLiquidacion || sv.tieneMensaje" ng-show="!liquidacionEncontrada">Crear</button>
-                    <button type="submit" class="btn btn-primary" ng-click="editarLiquidacion()" ng-disabled="formLiquidacionNueva.$invalid || !selected || errorLiquidacion" ng-show="liquidacionEncontrada">Editar</button>
+                    <button type="submit" class="btn btn-primary" ng-click="editarLiquidacion()" ng-disabled="formLiquidacionNueva.$invalid || !selected || errorLiquidacion || sv.tieneMensaje" ng-show="liquidacionEncontrada">Editar</button>
                 </div>
                 <br>
                 <label>{{ mensaje }}</label>

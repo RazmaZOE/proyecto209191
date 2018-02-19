@@ -2,6 +2,7 @@ var Liquidacion = require("../clases/liquidacion");
 var Empleado = require("../clases/empleado");
 var Empresa = require("../clases/empresa");
 var PDFDocument = require("pdfkit");
+//var blobStream = require("../../node_modules/blob-stream/blob-stream");
 var fs = require("fs");
 
 exports.getLiquidaciones = function(req, res){
@@ -3920,10 +3921,16 @@ exports.imprimirRecibos = function(req, res){
                     var horas = fecha.getHours();
                     var minutos = fecha.getMinutes();
                     var segundos = fecha.getSeconds();
+
                     doc.pipe(fs.createWriteStream("recibos/out-" + horas + "-" + minutos + "-" + segundos + ".pdf"));
-                    //doc.pipe(fs.createWriteStream(res));
+                    //var stream = doc.pipe(blobStream());
+                    //doc.pipe( fs.createWriteStream(res) )
                     //res.send("out.pdf");
                     doc.end();
+                    // stream.on("finish", function(){
+                    //     res.send(stream.toBlobURL("application/pdf"));
+                    // });
+                    //res.download("recibo.pdf");
                 }
                 else{
                     console.log("Empresa en null");

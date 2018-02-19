@@ -585,7 +585,7 @@ appEmpresa.controller("controladorEmpresaLiquidaciones", function($scope, $http,
             console.log("vino a imprimir");
             var liquidaciones = $scope.liquidaciones;
             var liquidacionesImprimir = [];
-            if(liquidaciones != []){
+            if(liquidaciones.length > 0){
                 liquidaciones.forEach(function(liq){
                     if(liq.imprimir){
                         liquidacionesImprimir.push(liq);
@@ -593,7 +593,8 @@ appEmpresa.controller("controladorEmpresaLiquidaciones", function($scope, $http,
                     }
                 });
             }
-            if(liquidacionesImprimir != []){
+            console.log(liquidacionesImprimir.length);
+            if(liquidacionesImprimir.length > 0){
                 $scope.imprimir = {};
                 $scope.imprimir.empresa = $scope.empresa;
                 $scope.imprimir.liquidaciones = liquidacionesImprimir;
@@ -601,7 +602,7 @@ appEmpresa.controller("controladorEmpresaLiquidaciones", function($scope, $http,
 
                 function respuestaOk(respuesta){
                     console.log(respuesta);
-                    window.open(respuesta.data);
+                    //window.open(respuesta.data);
                 }
                 function respuestaError(respuesta){
                     console.log("Error: " + respuesta);
@@ -814,6 +815,12 @@ appEmpresa.controller("controladorEmpresaLiquidacionNueva", function($scope, $ht
                             $scope.sv.diasGozar = respuesta.data.info.diasGozarSV;
                             $scope.sv.montoSVdia = respuesta.data.info.montoDiaSV;
                             $scope.sv.monto = respuesta.data.info.totalHaberes;
+                            if(respuesta.data.info.irpf != null){
+                                $scope.montoIrpf = respuesta.data.info.irpf;
+                            }
+                            else{
+                                $scope.montoIrpf = "";
+                            }
                         }
                         else{
                             $scope.sv.mensaje = "Seleccione días a gozar";
