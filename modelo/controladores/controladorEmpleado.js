@@ -51,10 +51,18 @@ exports.nuevoEmpleado = function(req, res){
     });
     empleado.save(function(err){
         if(err){
-            res.json({
-                exito: false,
-                mensaje: err
-            });
+            if(err.code === 11000){
+                res.json({
+                    exito: false,
+                    mensaje: "Ya existe una empleado con esa cédula" 
+                });
+            }
+            else{
+                res.json({
+                    exito: false,
+                    mensaje: err
+                });
+            }
         }
         else{
             res.json({

@@ -934,6 +934,7 @@ appEmpresa.controller("controladorEmpresaLiquidacionNueva", function($scope, $ht
         }
 
         $scope.actualizarDatos = function(){
+            $scope.fueEditado = true;
             updateHaberes();
         }
 
@@ -1086,9 +1087,11 @@ appEmpresa.controller("controladorEmpresaLiquidacionNueva", function($scope, $ht
 
                         function respOk(res){
                             if(res.data.exito){
+                                var deducciones = parseFloat($scope.egreso.porcentajeDeducciones) / 100;
+                                var montoBase = res.data.montoBaseNominal - (res.data.montoBaseNominal * deducciones);
                                 console.log("días licencia no gozados: " + res.data.diasLicenciaNoGozados);
-                                $scope.egreso.licenciaNoGozada = Math.round(res.data.diasLicenciaNoGozados * res.data.montoBaseNominal / 30 * 100) / 100;
-                                $scope.egreso.salarioVacacional = Math.round(res.data.diasLicenciaNoGozados * res.data.montoBaseNominal / 30 * 100) / 100;
+                                $scope.egreso.licenciaNoGozada = Math.round(res.data.diasLicenciaNoGozados * montoBase / 30 * 100) / 100;
+                                $scope.egreso.salarioVacacional = Math.round(res.data.diasLicenciaNoGozados * montoBase / 30 * 100) / 100;
                                 $scope.egreso.aguinaldo = Math.round(res.data.aguinaldo * 100) / 100;
                                 $scope.egreso.ipd = Math.round(res.data.montoIPD * 100) / 100;
                                 $scope.egreso.alicuotaAguinaldo = Math.round(res.data.alicuotaAguinaldo * 100) / 100;
@@ -1173,7 +1176,7 @@ appEmpresa.controller("controladorEmpresaLiquidacionNueva", function($scope, $ht
                 $scope.descuentoSeguroPorEnfermedad = Math.round($scope.haberesGravados * 0.03 * 100) / 100;
                 $scope.descuentoSNIS = Math.round($scope.haberesGravados * ($scope.valorAdicionalSNIS / 100) * 100) / 100;
                 $scope.descuentos = Math.round(($scope.descuentoAporteJubilatorio + $scope.descuentoFRL + $scope.descuentoSeguroPorEnfermedad + $scope.descuentoSNIS + $scope.liquidacion.adelanto + $scope.liquidacion.retencion) * 100) / 100;
-                $scope.liquidoCobrar = $scope.haberes - $scope.descuentos;
+                $scope.liquidoCobrar = Math.round(($scope.haberes - $scope.descuentos) * 100) / 100;
 
                 if($scope.empleadoSeleccionado.hijosMenores == null){
                     $scope.empleadoSeleccionado.hijosMenores = 0;
@@ -1233,7 +1236,7 @@ appEmpresa.controller("controladorEmpresaLiquidacionNueva", function($scope, $ht
                                 $scope.descuentoSeguroPorEnfermedad = Math.round($scope.haberesGravados * 0.03 * 100) / 100;
                                 $scope.descuentoSNIS = Math.round($scope.haberesGravados * ($scope.valorAdicionalSNIS / 100) * 100) / 100;
                                 $scope.descuentos = Math.round(($scope.descuentoAporteJubilatorio + $scope.descuentoFRL + $scope.descuentoSeguroPorEnfermedad + $scope.descuentoSNIS) * 100) / 100;
-                                $scope.liquidoCobrar = $scope.haberes - $scope.descuentos;
+                                $scope.liquidoCobrar = Math.round(($scope.haberes - $scope.descuentos) * 100) / 100;
                             }
                         }
                     }
@@ -1256,7 +1259,7 @@ appEmpresa.controller("controladorEmpresaLiquidacionNueva", function($scope, $ht
                     $scope.descuentoSeguroPorEnfermedad = 0
                     $scope.descuentoSNIS = 0
                     $scope.descuentos = 0
-                    $scope.liquidoCobrar = $scope.haberes - $scope.descuentos;
+                    $scope.liquidoCobrar = Math.round(($scope.haberes - $scope.descuentos) * 100) / 100;
                     console.log("montoSV: " + $scope.haberes);
 
                     $http.get("/liquidaciones/calcularDiasGozadosSV/" + $scope.empresa + "/" + $scope.empleadoSeleccionado._id + "/" + $scope.mes + "/" + $scope.anio).then(okRespuesta, errorRespuesta);
@@ -1277,17 +1280,25 @@ appEmpresa.controller("controladorEmpresaLiquidacionNueva", function($scope, $ht
                         $scope.irpf.anio = $scope.anio;
                         $scope.irpf.empleadoId = $scope.empleadoSeleccionado._id;
                         $scope.irpf.nombreLiquidacion = $scope.nombre;
+                        
+                        if(!$scope.liquidacionEncontrada || ($scope.liquidacionEncontrada && $scope.fueEditado)){
+                            //Si no fue encontrada o si fue econtrada y editada, entra
+                            $http.post("/liquidaciones/calcularIrpf", $scope.irpf).then(rOk, rError);
             
-                        $http.post("/liquidaciones/calcularIrpf", $scope.irpf).then(rOk, rError);
-            
-                        function rOk(re){
-                            if(re.data != null){
-                                $scope.montoIrpf = parseInt(re.data);
-                                $scope.liquidoCobrar = $scope.liquidoCobrar - $scope.montoIrpf;
+                            function rOk(re){
+                                if(re.data != null){
+                                    $scope.montoIrpf = parseInt(re.data);
+                                    $scope.liquidoCobrar = $scope.liquidoCobrar - $scope.montoIrpf;
+                                }
+                            }
+                            function rError(re){
+                                console.log("Error: " + re.data);
                             }
                         }
-                        function rError(re){
-                            console.log("Error: " + re.data);
+                        else{
+                            if($scope.montoIrpf != ""){
+                                $scope.liquidoCobrar = $scope.liquidoCobrar - $scope.montoIrpf;
+                            }
                         }
                     }
                     function errorRespuesta(resp){
@@ -1312,7 +1323,7 @@ appEmpresa.controller("controladorEmpresaLiquidacionNueva", function($scope, $ht
                 $scope.descuentoSeguroPorEnfermedad = Math.round($scope.haberesGravados * 0.03 * 100) / 100;
                 $scope.descuentoSNIS = Math.round($scope.haberesGravados * ($scope.valorAdicionalSNIS / 100) * 100) / 100;
                 $scope.descuentos = Math.round(($scope.descuentoAporteJubilatorio + $scope.descuentoFRL + $scope.descuentoSeguroPorEnfermedad + $scope.descuentoSNIS + $scope.liquidacion.adelanto + $scope.liquidacion.retencion) * 100) / 100;
-                $scope.liquidoCobrar = $scope.haberes - $scope.descuentos;
+                $scope.liquidoCobrar = Math.round(($scope.haberes - $scope.descuentos) * 100) / 100;
 
                 if($scope.empleadoSeleccionado.hijosMenores == null){
                     $scope.empleadoSeleccionado.hijosMenores = 0;
@@ -1328,17 +1339,25 @@ appEmpresa.controller("controladorEmpresaLiquidacionNueva", function($scope, $ht
                 $scope.irpf.empleadoId = $scope.empleadoSeleccionado._id;
                 $scope.irpf.nombreLiquidacion = $scope.nombre;
                 $scope.irpf.fechaIngresoEmpleado = $scope.empleadoSeleccionado.fechaIngreso;
-    
-                $http.post("/liquidaciones/calcularIrpf", $scope.irpf).then(respuestaOk, respuestaError);
-    
-                function respuestaOk(respuesta){
-                    if(respuesta.data != null){
-                        $scope.montoIrpf = parseInt(respuesta.data);
-                        $scope.liquidoCobrar = $scope.liquidoCobrar - $scope.montoIrpf;
+                
+                if(!$scope.liquidacionEncontrada || ($scope.liquidacionEncontrada && $scope.fueEditado)){
+                    //Si no fue encontrada o si fue econtrada y editada, entra
+                    $http.post("/liquidaciones/calcularIrpf", $scope.irpf).then(respuestaOk, respuestaError);
+        
+                    function respuestaOk(respuesta){
+                        if(respuesta.data != null){
+                            $scope.montoIrpf = parseInt(respuesta.data);
+                            $scope.liquidoCobrar = $scope.liquidoCobrar - $scope.montoIrpf;
+                        }
+                    }
+                    function respuestaError(respuesta){
+                        console.log("Error: " + respuesta.data);
                     }
                 }
-                function respuestaError(respuesta){
-                    console.log("Error: " + respuesta.data);
+                else{
+                    if($scope.montoIrpf != ""){
+                        $scope.liquidoCobrar = $scope.liquidoCobrar - $scope.montoIrpf;
+                    }
                 }
             }
         }

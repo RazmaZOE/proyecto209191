@@ -144,7 +144,7 @@ exports.calcularSalarioVacacional = function(req, res){
             var montoSVdia = 0;
             var montoSVliquido = 0;
             var promedioExtras = 0;
-            console.log("req.body: " + req.body.porcentajeDeducciones + " " + req.diasGozar)
+            console.log("req.body: " + req.body.porcentajeDeducciones + " " + req.body.diasGozar)
             var deducciones = parseFloat(req.body.porcentajeDeducciones) / 100;
 
             Liquidacion.find({
@@ -158,16 +158,16 @@ exports.calcularSalarioVacacional = function(req, res){
                         console.log(err);
                     }
                     else{
-                        console.log("liquidaciones para SV: " + liquidaciones)
+                        console.log("liquidaciones para SV: " + liquidaciones != []);
                         if(liquidaciones != []){
                             console.log("Entró al if de liquidaciones != []");
                             liquidaciones.forEach(function(liq){
                                 cont++;
-                                extras = extras + liq.montoHorasExtra;
+                                extras = extras + liq.montoHorasExtra + liq.montoFictoPropina + liq.montoDescansoTrabajado + liq.montoFeriadoPago + liq.montoPrimaPorAntiguedad + liq.montoPrimaPorProductividad;
                             });
                             promedioExtras = extras / cont;
                         }
-                        console.log("Resultado del foreach: " + extras + cont);
+                        console.log("Resultado del foreach: " + extras + " - " + cont);
                         montoSVnominal = sueldo + promedioExtras;
                         var descuentos = montoSVnominal * deducciones;
                         montoSVdia = (montoSVnominal - descuentos) / 30
@@ -314,9 +314,11 @@ exports.calcularIrpf = function(req, res){
                             }
                             if(liq.nombre == "Salario Vacacional" && !(liq.mes == 12 && liq.nombre == nombreLiquidacion)){
                                 totalSVmasAguinaldos = totalSVmasAguinaldos + liq.totalHaberes;
+                                console.log("Entró en SV IRPF Anual a sumar :" + totalSVmasAguinaldos);
                             }
                             if(liq.nombre == "Aguinaldo" && !(liq.mes == 12 && liq.nombre == nombreLiquidacion)){
                                 totalSVmasAguinaldos = totalSVmasAguinaldos + liq.totalHaberes;
+                                console.log("Entró en SV IRPF Anual a sumar :" + totalSVmasAguinaldos);
                                 totalDeduccionesEneNov = totalDeduccionesEneNov + liq.descuentoAporteJubilatorio + liq.descuentoFRL + liq.descuentoSeguroPorEnfermedad + liq.descuentoSNIS;
                             }
                             if(liq.nombre == "Egreso" && !(liq.mes == 12 && liq.nombre == nombreLiquidacion)){
@@ -330,7 +332,7 @@ exports.calcularIrpf = function(req, res){
                 totalIrpfAnual = totalSueldosEneNov + computableDic;
                 console.log("Total Ingresos Sueldo Anual: " + totalIrpfAnual);
                 totalSVmasAguinaldosAnual = totalSVmasAguinaldos + computableSVoAguinaldoDic;
-                console.log("Total Ingresos SV y Aguinaldo Anual: " + totalSVmasAguinaldosAnual);
+                console.log("Total Ingresos SV y Aguinaldo Anual: " + totalSVmasAguinaldos + " - " + computableSVoAguinaldoDic);
                 totalDeduccionesAnual = totalDeduccionesEneNov + deduccionesDic;
                 console.log("Total Deducciones Anual: " + totalDeduccionesAnual);
 
@@ -419,6 +421,7 @@ exports.calcularIrpf = function(req, res){
                     totalIrpf = totalIrpf + (restoComputable * porcentajeFranja8);
                 }
 
+                console.log("Deducciones por hijos: " + hijosMenoresAnual);
                 totalDeduccionesAnual = totalDeduccionesAnual + hijosMenoresAnual;
                 var tasaComputable = 0;
                 if(totalIrpfAnual <= (180 * bpc)){
@@ -439,6 +442,7 @@ exports.calcularIrpf = function(req, res){
                 totalAnual = totalAnual - totalIrpfEneNov;
                 totalAnual = Math.round(totalAnual);
                 console.log("IRPF Anual total después descuentos: " + totalAnual);
+                console.log("IRPF TOTAL ANUAL: " + (totalIrpfEneNov + totalAnual));
                 if(totalAnual<0){
                     totalAnual = 0;
                 }
@@ -640,7 +644,12 @@ exports.calcularEgreso = function(req, res){
                         var fechaDesdeAguinaldo = new Date(req.body.anioLiquidacion, 5);
                     }
                     else{
-                        var fechaDesdeAguinaldo = new Date(req.body.anioLiquidacion -1, 11);
+                        if(mesActual > 10){
+                            var fechaDesdeAguinaldo = new Date(req.body.anioLiquidacion, 11);
+                        }
+                        else{
+                            var fechaDesdeAguinaldo = new Date(req.body.anioLiquidacion -1, 11);
+                        }
                     }
                     console.log("fecha desde aguinaldo: " + fechaDesdeAguinaldo);
                     console.log("fecha hasta aguinaldo: " + fechaEgreso);
@@ -694,7 +703,8 @@ exports.calcularEgreso = function(req, res){
                 }
                 diasLicenciaNoGozados = (fechaEgreso - primerDiaAnio) / (1000*60*60*24); //dias
                 console.log("días licencia no gozados " + diasLicenciaNoGozados);
-                diasLicenciaNoGozados = Math.round(diasLicenciaNoGozados * (diasLicenciaTotalAnual / 12) / 30 * 100) / 100;
+                //diasLicenciaNoGozados = Math.round(diasLicenciaNoGozados * (diasLicenciaTotalAnual / 12) / 30 * 100) / 100;
+                diasLicenciaNoGozados = Math.round(diasLicenciaNoGozados * (diasLicenciaTotalAnual / 12) / 30);
                 console.log("días licencia no gozados " + diasLicenciaNoGozados);
                 var diasSinGozarAnioAnterior = parseInt(req.body.diasLicenciaAnioAnterior) - parseInt(req.body.diasGozadosAnioAnterior);
                 diasLicenciaNoGozados = diasLicenciaNoGozados + diasSinGozarAnioAnterior;
@@ -710,15 +720,18 @@ exports.calcularEgreso = function(req, res){
                 var alicuotaSV = 0;
                 if(tieneIPD){
                     var anioTrabajadoIPD = fechaEgreso.getFullYear() - fechaIngreso.getFullYear();
+                    console.log("Años trabajados IPD: " + anioTrabajadoIPD);
+                    console.log("Condiciones entrar if años IPD: " + (fechaEgreso.getMonth() >= fechaIngreso.getMonth()) + (fechaEgreso.getDate() >= fechaIngreso.getDate()));
                     if(fechaEgreso.getMonth() >= fechaIngreso.getMonth()){
                         if(fechaEgreso.getDate() >= fechaIngreso.getDate()){
-                            anioTrabajadoIPD = aniosTrabajados + 1;
+                            anioTrabajadoIPD = anioTrabajadoIPD + 1;
                         }
                     }
                     if(anioTrabajadoIPD > 6){
                         anioTrabajadoIPD = 6;
                     }
-                    montoIPD = montoBaseNominal * aniosTrabajados;
+                    montoIPD = montoBaseNominal * anioTrabajadoIPD;
+                    console.log("MONTO IPD: " + montoIPD);
                     alicuotaAguinaldo = montoAguinaldo * anioTrabajadoIPD;
                     alicuotaLicencia = montoBaseNominal / 30 * anioTrabajadoIPD * diasLicenciaTotalAnual / 12;
                     alicuotaSV = montoBaseNominal / 30 * anioTrabajadoIPD * diasLicenciaTotalAnual / 12;

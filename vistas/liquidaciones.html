@@ -22,14 +22,16 @@
             <table class="table table-striped">
                 <tr class="info">
                     <th>Fecha</th>
-                    <th>CI Empleado</th>
+                    <th>Apellidos</th>
+                    <th>Nombres</th>
                     <th>Tipo</th>
                     <th>Imprimir</th>
                     <!-- <th>Liquidaciones</th> -->
                 </tr>
                 <tr ng-repeat="liquidacion in liquidaciones">
                     <td>{{ liquidacion.mes }}/{{ liquidacion.anio }}</td>
-                    <td>{{ liquidacion.empleadoCi }}</td>
+                    <td>{{ liquidacion.empleado.apellidos }}</td>
+                    <td>{{ liquidacion.empleado.nombres }}</td>
                     <td>{{ liquidacion.nombre }}</td>
                     <td><input type="checkbox" class="form-check-input" ng-model="liquidacion.imprimir"></td>
                     <!-- <td><a class="btn btn-outline-primary" ng-click="liquidacionesEmpresaDetalle(liquidacion._id)">Ver</a></td> -->

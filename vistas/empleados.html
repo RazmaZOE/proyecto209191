@@ -19,13 +19,13 @@
                     <tr class="info">
                         <td>Nombres</td>
                         <td>Apellidos</td>
-                        <td>Fecha de Nacimiento</td>
+                        <td>Fecha de Ingreso</td>
                         <td>Editar</td>
                     </tr>
                     <tr ng-repeat="empleado in empleados">
                         <td>{{ empleado.nombres }}</td>
                         <td>{{ empleado.apellidos }}</td>
-                        <td>{{ empleado.fechaNacimiento | date: "dd/MM/y"}}</td>
+                        <td>{{ empleado.fechaIngreso | date: "dd/MM/y"}}</td>
                         <td><a class="btn btn-outline-primary" ng-click="empleadoEditar(empleado)">Editar</a></td>
                     </tr>
                 </table>
